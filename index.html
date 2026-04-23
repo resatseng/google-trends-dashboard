@@ -29,6 +29,12 @@ h2{font-size:.95rem;font-weight:600;margin-bottom:14px;color:#444}
 .mchip{padding:3px 10px;border-radius:12px;font-size:.72rem;font-weight:500;border:1.5px solid #e0e0e0;color:#777;background:#fff;transition:.2s}
 .mchip.in{background:#5c6bc0;color:#fff;border-color:#5c6bc0}
 .mchip.out{opacity:.38}
+/* View tabs */
+.vtabs{display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid #e8eaf0}
+.vtab{padding:9px 22px;font-size:.88rem;font-weight:600;cursor:pointer;color:#999;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s;user-select:none}
+.vtab.on{color:#5c6bc0;border-color:#5c6bc0}
+.view{display:none}
+.view.on{display:block}
 /* Pills */
 .pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
 .pill{padding:5px 14px;border-radius:20px;border:1.5px solid #e0e0e0;background:#fff;cursor:pointer;font-size:.78rem;font-weight:500;transition:.15s;color:#555;white-space:nowrap}
@@ -68,6 +74,12 @@ tr:hover td{background:#fafbff}
 .pb:disabled{opacity:.35;cursor:default;pointer-events:none}
 .pinfo{color:#aaa;font-size:.78rem}
 .empty{text-align:center;padding:28px;color:#ccc;font-size:.9rem}
+/* Topic table */
+.topic-row td{vertical-align:top;padding:13px 12px}
+.topic-name{font-weight:700;font-size:.93rem}
+.topic-desc{font-size:.74rem;color:#888;margin-top:2px}
+.member-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;max-width:340px}
+.mchp{padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:500;cursor:default}
 </style>
 </head>
 <body>
@@ -95,39 +107,68 @@ tr:hover td{background:#fafbff}
     <div class="chart-wrap"><canvas id="barChart"></canvas></div>
   </div>
 
-  <div class="card">
-    <h2>🔍 關鍵字明細</h2>
-    <div class="pills" id="pills"></div>
-    <!-- Trend filter -->
-    <div class="tfilter" id="tfilter">
-      <span style="font-size:.78rem;color:#888;align-self:center">趨勢：</span>
-      <button class="tfbtn on" style="background:#555;border-color:#555" onclick="setTrend('ALL')">全部</button>
-      <button class="tfbtn" style="color:#7e57c2;border-color:#7e57c2" onclick="setTrend('new')">★ 新興</button>
-      <button class="tfbtn" style="color:#43a047;border-color:#43a047" onclick="setTrend('up')">↑ 上升</button>
-      <button class="tfbtn" style="color:#aaa;border-color:#ccc" onclick="setTrend('flat')">→ 持平</button>
-      <button class="tfbtn" style="color:#e53935;border-color:#e53935" onclick="setTrend('down')">↓ 下降</button>
-    </div>
-    <input class="search" id="search" placeholder="搜尋關鍵字或類別…" type="text">
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr>
-          <th id="th-keyword" onclick="doSort('keyword')">關鍵字</th>
-          <th id="th-category" onclick="doSort('category')">類別</th>
-          <th id="th-total" class="sort-desc" onclick="doSort('total')">區間次數</th>
-          <th id="th-trend" onclick="doSort('trend')">趨勢</th>
-          <th>月份趨勢</th>
-          <th>各月明細</th>
-        </tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-    <div class="pag" id="pag"></div>
+  <!-- View toggle -->
+  <div class="vtabs">
+    <div class="vtab on" id="tab-kw" onclick="switchView('kw')">🔍 關鍵字視角</div>
+    <div class="vtab" id="tab-tp" onclick="switchView('tp')">🌐 主題視角</div>
   </div>
+
+  <!-- keyword view -->
+  <div class="view on" id="view-kw">
+    <div class="card">
+      <div class="pills" id="pills"></div>
+      <!-- Trend filter -->
+      <div class="tfilter" id="tfilter">
+        <span style="font-size:.78rem;color:#888;align-self:center">趨勢：</span>
+        <button class="tfbtn on" style="background:#555;border-color:#555" onclick="setTrend('ALL')">全部</button>
+        <button class="tfbtn" style="color:#7e57c2;border-color:#7e57c2" onclick="setTrend('new')">★ 新興</button>
+        <button class="tfbtn" style="color:#43a047;border-color:#43a047" onclick="setTrend('up')">↑ 上升</button>
+        <button class="tfbtn" style="color:#aaa;border-color:#ccc" onclick="setTrend('flat')">→ 持平</button>
+        <button class="tfbtn" style="color:#e53935;border-color:#e53935" onclick="setTrend('down')">↓ 下降</button>
+      </div>
+      <input class="search" id="search" placeholder="搜尋關鍵字或類別…" type="text">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th id="th-keyword" onclick="doSort('keyword')">關鍵字</th>
+            <th id="th-category" onclick="doSort('category')">類別</th>
+            <th id="th-total" class="sort-desc" onclick="doSort('total')">區間次數</th>
+            <th id="th-trend" onclick="doSort('trend')">趨勢</th>
+            <th>月份趨勢</th>
+            <th>各月明細</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="pag" id="pag"></div>
+    </div>
+  </div>
+
+  <!-- topic view -->
+  <div class="view" id="view-tp">
+    <div class="card">
+      <p style="font-size:.8rem;color:#aaa;margin-bottom:14px">多個相關關鍵字聚合為同一主題，顯示該主題在選定區間的合計熱度與趨勢</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>主題</th>
+            <th>區間次數</th>
+            <th>趨勢</th>
+            <th>月份趨勢</th>
+            <th>關鍵字成員</th>
+          </tr></thead>
+          <tbody id="topic-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
 <script>
-const D = {"months": ["2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04"], "keywords": [{"keyword": "費城半導體指數", "category": "半導體/製造業", "total": 8, "monthly": [1, 2, 1, 0, 2, 2]}, {"keyword": "費城半導體", "category": "半導體/製造業", "total": 7, "monthly": [2, 1, 2, 1, 1, 0]}, {"keyword": "spacex", "category": "AI/科技趨勢", "total": 6, "monthly": [0, 1, 1, 0, 1, 3]}, {"keyword": "美元指數", "category": "匯率/貨幣", "total": 5, "monthly": [2, 0, 1, 0, 2, 0]}, {"keyword": "美債", "category": "總經指標", "total": 5, "monthly": [1, 0, 1, 1, 2, 0]}, {"keyword": "非農就業數據", "category": "總經指標", "total": 5, "monthly": [1, 1, 1, 1, 1, 0]}, {"keyword": "銅價", "category": "大宗商品", "total": 5, "monthly": [0, 3, 1, 1, 0, 0]}, {"keyword": "黃金價格", "category": "大宗商品", "total": 5, "monthly": [0, 2, 1, 1, 1, 0]}, {"keyword": "cpi", "category": "總經指標", "total": 5, "monthly": [0, 1, 1, 1, 1, 1]}, {"keyword": "台幣匯率", "category": "匯率/貨幣", "total": 4, "monthly": [1, 1, 0, 1, 0, 1]}, {"keyword": "日幣匯率", "category": "匯率/貨幣", "total": 4, "monthly": [1, 0, 0, 0, 2, 1]}, {"keyword": "人民幣", "category": "匯率/貨幣", "total": 4, "monthly": [0, 0, 1, 0, 1, 2]}, {"keyword": "黃金", "category": "大宗商品", "total": 4, "monthly": [0, 0, 0, 1, 2, 1]}, {"keyword": "ai", "category": "AI/科技趨勢", "total": 3, "monthly": [2, 0, 0, 0, 1, 0]}, {"keyword": "中油油價", "category": "大宗商品", "total": 3, "monthly": [1, 0, 0, 1, 1, 0]}, {"keyword": "energy", "category": "能源", "total": 3, "monthly": [1, 2, 0, 0, 0, 0]}, {"keyword": "日幣", "category": "匯率/貨幣", "total": 3, "monthly": [1, 0, 0, 0, 0, 2]}, {"keyword": "美元匯率", "category": "匯率/貨幣", "total": 3, "monthly": [0, 2, 0, 1, 0, 0]}, {"keyword": "ppi", "category": "總經指標", "total": 3, "monthly": [0, 1, 1, 0, 1, 0]}, {"keyword": "金價", "category": "大宗商品", "total": 3, "monthly": [0, 1, 1, 0, 0, 1]}, {"keyword": "日圓", "category": "匯率/貨幣", "total": 3, "monthly": [0, 0, 1, 0, 0, 2]}, {"keyword": "nasa", "category": "AI/科技趨勢", "total": 3, "monthly": [0, 0, 0, 1, 0, 2]}, {"keyword": "光通訊概念股", "category": "半導體/製造業", "total": 3, "monthly": [0, 0, 0, 1, 2, 0]}, {"keyword": "原油", "category": "大宗商品", "total": 3, "monthly": [0, 0, 0, 0, 2, 1]}, {"keyword": "汽油", "category": "大宗商品", "total": 3, "monthly": [0, 0, 0, 0, 0, 3]}, {"keyword": "anthropic", "category": "AI/科技趨勢", "total": 2, "monthly": [2, 0, 0, 0, 0, 0]}, {"keyword": "記憶體報價", "category": "半導體/製造業", "total": 2, "monthly": [1, 0, 0, 1, 0, 0]}, {"keyword": "人民幣匯率", "category": "匯率/貨幣", "total": 2, "monthly": [1, 0, 0, 0, 0, 1]}, {"keyword": "msci", "category": "總經指標", "total": 2, "monthly": [1, 0, 0, 1, 0, 0]}, {"keyword": "降息", "category": "總經指標", "total": 2, "monthly": [1, 1, 0, 0, 0, 0]}, {"keyword": "claude", "category": "AI/科技趨勢", "total": 2, "monthly": [1, 1, 0, 0, 0, 0]}, {"keyword": "bdi指數", "category": "總經指標", "total": 2, "monthly": [0, 2, 0, 0, 0, 0]}, {"keyword": "gdp", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 0, 0, 1]}, {"keyword": "機器人概念股", "category": "半導體/製造業", "total": 2, "monthly": [0, 1, 0, 1, 0, 0]}, {"keyword": "fomc", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 0, 1, 0]}, {"keyword": "美債殖利率", "category": "總經指標", "total": 2, "monthly": [0, 1, 1, 0, 0, 0]}, {"keyword": "油價", "category": "大宗商品", "total": 2, "monthly": [0, 1, 0, 0, 1, 0]}, {"keyword": "矽光子概念股", "category": "半導體/製造業", "total": 2, "monthly": [0, 1, 0, 0, 1, 0]}, {"keyword": "景氣燈號", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 1, 0, 0]}, {"keyword": "中央銀行", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 0, 0, 1]}, {"keyword": "昇陽半導體", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 1, 0, 0, 1]}, {"keyword": "黃金etf", "category": "大宗商品", "total": 2, "monthly": [0, 0, 1, 1, 0, 0]}, {"keyword": "記憶體", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 1, 1, 0]}, {"keyword": "聯準會", "category": "總經指標", "total": 2, "monthly": [0, 0, 0, 1, 1, 0]}, {"keyword": "布蘭特原油", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "世紀風電", "category": "能源", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "天然氣", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "三星罷工", "category": "貿易/地緣", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "原油期貨", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 1, 1]}, {"keyword": "g7", "category": "貿易/地緣", "total": 2, "monthly": [0, 0, 0, 0, 1, 1]}, {"keyword": "石油", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 1, 1]}, {"keyword": "衛星", "category": "能源", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "水冷", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "外匯存底", "category": "匯率/貨幣", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "晶圓代工", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "半導體", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "trendforce", "category": "產業活動/研調", "total": 1, "monthly": [1, 0, 0, 0, 0, 0]}, {"keyword": "h200", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "海底電纜", "category": "產業活動/研調", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "waymo", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "非農數據公布時間", "category": "總經指標", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "manus", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "groq", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "meta ai", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "匯率", "category": "匯率/貨幣", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "下週油價", "category": "大宗商品", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "ces", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "美金匯率", "category": "匯率/貨幣", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "記憶體概念股", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "記憶體關稅", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "油價下周", "category": "大宗商品", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "smr", "category": "能源", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "dram", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "油價公告", "category": "大宗商品", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "hvdc", "category": "能源", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "coreweave", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "xai", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "低軌衛星", "category": "能源", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "computex", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "黃金存摺", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "美國製造", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "伊朗", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "黃金牌價", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "新式核能", "category": "能源", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "artificial intelligence news", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "華 光通訊", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "布蘭特原油價格", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "gtc 2026", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "智慧城市展", "category": "產業活動/研調", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "gemini ai", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "石油股", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "油價下週", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "矽光子", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "wti", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "中東", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "ai expo", "category": "產業活動/研調", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "石油股票", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "bloom energy", "category": "能源", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "荷姆茲海峽", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "非農", "category": "總經指標", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "先進封裝", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "伺服器", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "電腦記憶體", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "川普演說", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "rapidus", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "天 弓 四 型 防空 飛彈", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "世界 黃金 協會", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "伊朗無人機", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "wti 原油", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "布蘭特原油期貨", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "洲際液化天然氣接收站", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "銅箔", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "工業電腦", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "印刷電路板", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "動態隨機存取記憶體", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "2奈米製程", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "光通訊", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "央行", "category": "總經指標", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "油價預測", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}]};
+const D = {"months": ["2025-11", "2025-12", "2026-01", "2026-02", "2026-03", "2026-04"], "keywords": [{"keyword": "費城半導體指數", "category": "半導體/製造業", "total": 8, "monthly": [1, 2, 1, 0, 2, 2]}, {"keyword": "費城半導體", "category": "半導體/製造業", "total": 7, "monthly": [2, 1, 2, 1, 1, 0]}, {"keyword": "spacex", "category": "AI/科技趨勢", "total": 6, "monthly": [0, 1, 1, 0, 1, 3]}, {"keyword": "美元指數", "category": "匯率/貨幣", "total": 5, "monthly": [2, 0, 1, 0, 2, 0]}, {"keyword": "美債", "category": "總經指標", "total": 5, "monthly": [1, 0, 1, 1, 2, 0]}, {"keyword": "非農就業數據", "category": "總經指標", "total": 5, "monthly": [1, 1, 1, 1, 1, 0]}, {"keyword": "銅價", "category": "大宗商品", "total": 5, "monthly": [0, 3, 1, 1, 0, 0]}, {"keyword": "黃金價格", "category": "大宗商品", "total": 5, "monthly": [0, 2, 1, 1, 1, 0]}, {"keyword": "cpi", "category": "總經指標", "total": 5, "monthly": [0, 1, 1, 1, 1, 1]}, {"keyword": "台幣匯率", "category": "匯率/貨幣", "total": 4, "monthly": [1, 1, 0, 1, 0, 1]}, {"keyword": "日幣匯率", "category": "匯率/貨幣", "total": 4, "monthly": [1, 0, 0, 0, 2, 1]}, {"keyword": "人民幣", "category": "匯率/貨幣", "total": 4, "monthly": [0, 0, 1, 0, 1, 2]}, {"keyword": "黃金", "category": "大宗商品", "total": 4, "monthly": [0, 0, 0, 1, 2, 1]}, {"keyword": "ai", "category": "AI/科技趨勢", "total": 3, "monthly": [2, 0, 0, 0, 1, 0]}, {"keyword": "中油油價", "category": "大宗商品", "total": 3, "monthly": [1, 0, 0, 1, 1, 0]}, {"keyword": "energy", "category": "能源", "total": 3, "monthly": [1, 2, 0, 0, 0, 0]}, {"keyword": "日幣", "category": "匯率/貨幣", "total": 3, "monthly": [1, 0, 0, 0, 0, 2]}, {"keyword": "美元匯率", "category": "匯率/貨幣", "total": 3, "monthly": [0, 2, 0, 1, 0, 0]}, {"keyword": "ppi", "category": "總經指標", "total": 3, "monthly": [0, 1, 1, 0, 1, 0]}, {"keyword": "金價", "category": "大宗商品", "total": 3, "monthly": [0, 1, 1, 0, 0, 1]}, {"keyword": "日圓", "category": "匯率/貨幣", "total": 3, "monthly": [0, 0, 1, 0, 0, 2]}, {"keyword": "nasa", "category": "AI/科技趨勢", "total": 3, "monthly": [0, 0, 0, 1, 0, 2]}, {"keyword": "光通訊概念股", "category": "半導體/製造業", "total": 3, "monthly": [0, 0, 0, 1, 2, 0]}, {"keyword": "原油", "category": "大宗商品", "total": 3, "monthly": [0, 0, 0, 0, 2, 1]}, {"keyword": "汽油", "category": "大宗商品", "total": 3, "monthly": [0, 0, 0, 0, 0, 3]}, {"keyword": "anthropic", "category": "AI/科技趨勢", "total": 2, "monthly": [2, 0, 0, 0, 0, 0]}, {"keyword": "記憶體報價", "category": "半導體/製造業", "total": 2, "monthly": [1, 0, 0, 1, 0, 0]}, {"keyword": "人民幣匯率", "category": "匯率/貨幣", "total": 2, "monthly": [1, 0, 0, 0, 0, 1]}, {"keyword": "msci", "category": "總經指標", "total": 2, "monthly": [1, 0, 0, 1, 0, 0]}, {"keyword": "降息", "category": "總經指標", "total": 2, "monthly": [1, 1, 0, 0, 0, 0]}, {"keyword": "claude", "category": "AI/科技趨勢", "total": 2, "monthly": [1, 1, 0, 0, 0, 0]}, {"keyword": "bdi指數", "category": "總經指標", "total": 2, "monthly": [0, 2, 0, 0, 0, 0]}, {"keyword": "gdp", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 0, 0, 1]}, {"keyword": "機器人概念股", "category": "半導體/製造業", "total": 2, "monthly": [0, 1, 0, 1, 0, 0]}, {"keyword": "fomc", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 0, 1, 0]}, {"keyword": "美債殖利率", "category": "總經指標", "total": 2, "monthly": [0, 1, 1, 0, 0, 0]}, {"keyword": "油價", "category": "大宗商品", "total": 2, "monthly": [0, 1, 0, 0, 1, 0]}, {"keyword": "矽光子概念股", "category": "半導體/製造業", "total": 2, "monthly": [0, 1, 0, 0, 1, 0]}, {"keyword": "景氣燈號", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 1, 0, 0]}, {"keyword": "中央銀行", "category": "總經指標", "total": 2, "monthly": [0, 1, 0, 0, 0, 1]}, {"keyword": "昇陽半導體", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 1, 0, 0, 1]}, {"keyword": "黃金etf", "category": "大宗商品", "total": 2, "monthly": [0, 0, 1, 1, 0, 0]}, {"keyword": "記憶體", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 1, 1, 0]}, {"keyword": "聯準會", "category": "總經指標", "total": 2, "monthly": [0, 0, 0, 1, 1, 0]}, {"keyword": "布蘭特原油", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "世紀風電", "category": "能源", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "天然氣", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "三星罷工", "category": "貿易/地緣", "total": 2, "monthly": [0, 0, 0, 0, 2, 0]}, {"keyword": "原油期貨", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 1, 1]}, {"keyword": "g7", "category": "貿易/地緣", "total": 2, "monthly": [0, 0, 0, 0, 1, 1]}, {"keyword": "石油", "category": "大宗商品", "total": 2, "monthly": [0, 0, 0, 0, 1, 1]}, {"keyword": "衛星", "category": "能源", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "水冷", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "外匯存底", "category": "匯率/貨幣", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "晶圓代工", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "半導體", "category": "半導體/製造業", "total": 2, "monthly": [0, 0, 0, 0, 0, 2]}, {"keyword": "trendforce", "category": "產業活動/研調", "total": 1, "monthly": [1, 0, 0, 0, 0, 0]}, {"keyword": "h200", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "海底電纜", "category": "產業活動/研調", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "waymo", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "非農數據公布時間", "category": "總經指標", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "manus", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "groq", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "meta ai", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "匯率", "category": "匯率/貨幣", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "下週油價", "category": "大宗商品", "total": 1, "monthly": [0, 1, 0, 0, 0, 0]}, {"keyword": "ces", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "美金匯率", "category": "匯率/貨幣", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "記憶體概念股", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "記憶體關稅", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "油價下周", "category": "大宗商品", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "smr", "category": "能源", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "dram", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "油價公告", "category": "大宗商品", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "hvdc", "category": "能源", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "coreweave", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 1, 0, 0, 0]}, {"keyword": "xai", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "低軌衛星", "category": "能源", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "computex", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "黃金存摺", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "美國製造", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "伊朗", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "黃金牌價", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "新式核能", "category": "能源", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "artificial intelligence news", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 1, 0, 0]}, {"keyword": "華 光通訊", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "布蘭特原油價格", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "gtc 2026", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "智慧城市展", "category": "產業活動/研調", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "gemini ai", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "石油股", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "油價下週", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "矽光子", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "wti", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "中東", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "ai expo", "category": "產業活動/研調", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "石油股票", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 1, 0]}, {"keyword": "bloom energy", "category": "能源", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "荷姆茲海峽", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "非農", "category": "總經指標", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "先進封裝", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "伺服器", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "電腦記憶體", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "川普演說", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "rapidus", "category": "AI/科技趨勢", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "天 弓 四 型 防空 飛彈", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "世界 黃金 協會", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "伊朗無人機", "category": "貿易/地緣", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "wti 原油", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "布蘭特原油期貨", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "洲際液化天然氣接收站", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "銅箔", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "工業電腦", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "印刷電路板", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "動態隨機存取記憶體", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "2奈米製程", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "光通訊", "category": "半導體/製造業", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "央行", "category": "總經指標", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}, {"keyword": "油價預測", "category": "大宗商品", "total": 1, "monthly": [0, 0, 0, 0, 0, 1]}], "topics": [{"topic": "半導體供應鏈", "color": "#0277bd", "desc": "晶圓代工、先進封裝、記憶體、AI基礎建設", "monthly": [4, 4, 7, 4, 9, 16], "total": 44, "members": [{"keyword": "費城半導體指數", "monthly": [1, 2, 1, 0, 2, 2], "total": 8}, {"keyword": "費城半導體", "monthly": [2, 1, 2, 1, 1, 0], "total": 7}, {"keyword": "光通訊概念股", "monthly": [0, 0, 0, 1, 2, 0], "total": 3}, {"keyword": "昇陽半導體", "monthly": [0, 0, 1, 0, 0, 1], "total": 2}, {"keyword": "半導體", "monthly": [0, 0, 0, 0, 0, 2], "total": 2}, {"keyword": "晶圓代工", "monthly": [0, 0, 0, 0, 0, 2], "total": 2}, {"keyword": "記憶體報價", "monthly": [1, 0, 0, 1, 0, 0], "total": 2}, {"keyword": "記憶體", "monthly": [0, 0, 0, 1, 1, 0], "total": 2}, {"keyword": "矽光子概念股", "monthly": [0, 1, 0, 0, 1, 0], "total": 2}, {"keyword": "水冷", "monthly": [0, 0, 0, 0, 0, 2], "total": 2}, {"keyword": "先進封裝", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "記憶體概念股", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "記憶體關稅", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "電腦記憶體", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "動態隨機存取記憶體", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "dram", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "矽光子", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "銅箔", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "華 光通訊", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "光通訊", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "工業電腦", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "印刷電路板", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}]}, {"topic": "Fed政策與通膨", "color": "#4527a0", "desc": "利率決策、通膨指標、景氣燈號", "monthly": [4, 11, 5, 6, 7, 3], "total": 36, "members": [{"keyword": "cpi", "monthly": [0, 1, 1, 1, 1, 1], "total": 5}, {"keyword": "非農就業數據", "monthly": [1, 1, 1, 1, 1, 0], "total": 5}, {"keyword": "美債", "monthly": [1, 0, 1, 1, 2, 0], "total": 5}, {"keyword": "ppi", "monthly": [0, 1, 1, 0, 1, 0], "total": 3}, {"keyword": "gdp", "monthly": [0, 1, 0, 0, 0, 1], "total": 2}, {"keyword": "fomc", "monthly": [0, 1, 0, 0, 1, 0], "total": 2}, {"keyword": "降息", "monthly": [1, 1, 0, 0, 0, 0], "total": 2}, {"keyword": "聯準會", "monthly": [0, 0, 0, 1, 1, 0], "total": 2}, {"keyword": "景氣燈號", "monthly": [0, 1, 0, 1, 0, 0], "total": 2}, {"keyword": "美債殖利率", "monthly": [0, 1, 1, 0, 0, 0], "total": 2}, {"keyword": "bdi指數", "monthly": [0, 2, 0, 0, 0, 0], "total": 2}, {"keyword": "msci", "monthly": [1, 0, 0, 1, 0, 0], "total": 2}, {"keyword": "非農數據公布時間", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}, {"keyword": "非農", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}]}, {"topic": "匯率波動", "color": "#00695c", "desc": "台幣、日圓、人民幣、美元走勢", "monthly": [6, 4, 4, 2, 5, 11], "total": 32, "members": [{"keyword": "美元指數", "monthly": [2, 0, 1, 0, 2, 0], "total": 5}, {"keyword": "台幣匯率", "monthly": [1, 1, 0, 1, 0, 1], "total": 4}, {"keyword": "日幣匯率", "monthly": [1, 0, 0, 0, 2, 1], "total": 4}, {"keyword": "人民幣", "monthly": [0, 0, 1, 0, 1, 2], "total": 4}, {"keyword": "美元匯率", "monthly": [0, 2, 0, 1, 0, 0], "total": 3}, {"keyword": "日圓", "monthly": [0, 0, 1, 0, 0, 2], "total": 3}, {"keyword": "日幣", "monthly": [1, 0, 0, 0, 0, 2], "total": 3}, {"keyword": "人民幣匯率", "monthly": [1, 0, 0, 0, 0, 1], "total": 2}, {"keyword": "外匯存底", "monthly": [0, 0, 0, 0, 0, 2], "total": 2}, {"keyword": "匯率", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}, {"keyword": "美金匯率", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}]}, {"topic": "油價震盪", "color": "#bf360c", "desc": "國際油價、天然氣、能源商品", "monthly": [1, 2, 2, 1, 15, 10], "total": 31, "members": [{"keyword": "原油", "monthly": [0, 0, 0, 0, 2, 1], "total": 3}, {"keyword": "中油油價", "monthly": [1, 0, 0, 1, 1, 0], "total": 3}, {"keyword": "汽油", "monthly": [0, 0, 0, 0, 0, 3], "total": 3}, {"keyword": "布蘭特原油", "monthly": [0, 0, 0, 0, 2, 0], "total": 2}, {"keyword": "原油期貨", "monthly": [0, 0, 0, 0, 1, 1], "total": 2}, {"keyword": "油價", "monthly": [0, 1, 0, 0, 1, 0], "total": 2}, {"keyword": "天然氣", "monthly": [0, 0, 0, 0, 2, 0], "total": 2}, {"keyword": "石油", "monthly": [0, 0, 0, 0, 1, 1], "total": 2}, {"keyword": "布蘭特原油價格", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "wti 原油", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "布蘭特原油期貨", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "下週油價", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}, {"keyword": "油價下周", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "油價公告", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "油價下週", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "油價預測", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "洲際液化天然氣接收站", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "石油股", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "石油股票", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "wti", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}]}, {"topic": "AI科技浪潮", "color": "#6a1b9a", "desc": "大模型、AI硬體、太空科技", "monthly": [3, 7, 3, 4, 2, 6], "total": 25, "members": [{"keyword": "spacex", "monthly": [0, 1, 1, 0, 1, 3], "total": 6}, {"keyword": "nasa", "monthly": [0, 0, 0, 1, 0, 2], "total": 3}, {"keyword": "anthropic", "monthly": [2, 0, 0, 0, 0, 0], "total": 2}, {"keyword": "claude", "monthly": [1, 1, 0, 0, 0, 0], "total": 2}, {"keyword": "h200", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}, {"keyword": "computex", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}, {"keyword": "ces", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "waymo", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}, {"keyword": "manus", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}, {"keyword": "groq", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}, {"keyword": "coreweave", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "xai", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}, {"keyword": "rapidus", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "artificial intelligence news", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}, {"keyword": "gemini ai", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "meta ai", "monthly": [0, 1, 0, 0, 0, 0], "total": 1}]}, {"topic": "黃金與銅", "color": "#f57f17", "desc": "避險資產與工業金屬", "monthly": [0, 6, 4, 6, 3, 4], "total": 23, "members": [{"keyword": "黃金價格", "monthly": [0, 2, 1, 1, 1, 0], "total": 5}, {"keyword": "銅價", "monthly": [0, 3, 1, 1, 0, 0], "total": 5}, {"keyword": "黃金", "monthly": [0, 0, 0, 1, 2, 1], "total": 4}, {"keyword": "金價", "monthly": [0, 1, 1, 0, 0, 1], "total": 3}, {"keyword": "黃金etf", "monthly": [0, 0, 1, 1, 0, 0], "total": 2}, {"keyword": "黃金存摺", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}, {"keyword": "黃金牌價", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}, {"keyword": "世界 黃金 協會", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "銅箔", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}]}, {"topic": "AI伺服器需求", "color": "#01579b", "desc": "伺服器、液冷、CPO、光連接", "monthly": [0, 0, 0, 1, 3, 4], "total": 8, "members": [{"keyword": "光通訊概念股", "monthly": [0, 0, 0, 1, 2, 0], "total": 3}, {"keyword": "水冷", "monthly": [0, 0, 0, 0, 0, 2], "total": 2}, {"keyword": "伺服器", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "華 光通訊", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "光通訊", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}]}, {"topic": "能源轉型", "color": "#2e7d32", "desc": "再生能源、SMR、HVDC、衛星", "monthly": [0, 0, 2, 1, 2, 3], "total": 8, "members": [{"keyword": "世紀風電", "monthly": [0, 0, 0, 0, 2, 0], "total": 2}, {"keyword": "衛星", "monthly": [0, 0, 0, 0, 0, 2], "total": 2}, {"keyword": "smr", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "hvdc", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "bloom energy", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "低軌衛星", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}]}, {"topic": "關稅與貿易戰", "color": "#e65100", "desc": "美中貿易、關稅、川普政策", "monthly": [0, 0, 1, 1, 3, 2], "total": 7, "members": [{"keyword": "g7", "monthly": [0, 0, 0, 0, 1, 1], "total": 2}, {"keyword": "三星罷工", "monthly": [0, 0, 0, 0, 2, 0], "total": 2}, {"keyword": "記憶體關稅", "monthly": [0, 0, 1, 0, 0, 0], "total": 1}, {"keyword": "美國製造", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}, {"keyword": "川普演說", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}]}, {"topic": "地緣衝突", "color": "#c62828", "desc": "中東局勢、伊朗、無人機、飛彈、荷姆茲", "monthly": [0, 0, 0, 1, 1, 3], "total": 5, "members": [{"keyword": "伊朗", "monthly": [0, 0, 0, 1, 0, 0], "total": 1}, {"keyword": "伊朗無人機", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "中東", "monthly": [0, 0, 0, 0, 1, 0], "total": 1}, {"keyword": "天 弓 四 型 防空 飛彈", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}, {"keyword": "荷姆茲海峽", "monthly": [0, 0, 0, 0, 0, 1], "total": 1}]}]};
 const MONTHS = D.months;
 const KW = D.keywords;
+const TOPICS = D.topics;
 
 const COLORS = {
   '總經指標':     '#5c6bc0',
@@ -144,6 +185,7 @@ const CATS = Object.keys(COLORS);
 // ── state ──
 let rs = 0, re = MONTHS.length - 1;
 let activeCat = 'ALL', activeTrend = 'ALL', q = '', sortKey = 'total', sortDir = -1, pg = 1;
+let activeView = 'kw';
 const PG = 20;
 let barChart = null;
 
@@ -162,6 +204,16 @@ function trendInfo(k) {
   if (recent > early * 1.2 + 0.5) return { key: 'up',   label: '↑ 上升', color: '#43a047', score: 2 };
   if (early  > recent * 1.2 + 0.5)return { key: 'down', label: '↓ 下降', color: '#e53935', score: 0 };
   return { key: 'flat', label: '→ 持平', color: '#aaa', score: 1 };
+}
+
+// ── view toggle ──
+function switchView(v) {
+  activeView = v;
+  ['kw','tp'].forEach(id => {
+    document.getElementById('tab-' + id).classList.toggle('on', id === v);
+    document.getElementById('view-' + id).classList.toggle('on', id === v);
+  });
+  if (v === 'tp') renderTopics();
 }
 
 // ── range selectors ──
@@ -197,7 +249,7 @@ function refreshAll() {
   updateStats();
   renderChart();
   render();
-  // 區間改變後趨勢定義也跟著變，重算但不重置篩選
+  if (activeView === 'tp') renderTopics();
 }
 
 function updateHint() {
@@ -293,7 +345,7 @@ function spark(monthly, col) {
   }).join('') + '</div>';
 }
 
-// ── render table ──
+// ── render keyword table ──
 function render() {
   const list = filtered();
   const tot = list.length, pages = Math.max(1, Math.ceil(tot / PG));
@@ -303,7 +355,7 @@ function render() {
 
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = slice.length === 0
-    ? '<tr><td colspan="5" class="empty">此區間沒有符合的關鍵字</td></tr>'
+    ? '<tr><td colspan="6" class="empty">此區間沒有符合的關鍵字</td></tr>'
     : slice.map(k => {
         const col = COLORS[k.category] || '#888';
         const et = effTotal(k);
@@ -340,6 +392,48 @@ function render() {
 }
 
 function go(p) { pg = p; render(); }
+
+// ── render topic table ──
+function renderTopics() {
+  const visible = TOPICS.filter(t => t.monthly.slice(rs, re+1).reduce((a,b)=>a+b,0) > 0)
+                        .sort((a,b) => {
+                          const ta = a.monthly.slice(rs,re+1).reduce((x,y)=>x+y,0);
+                          const tb = b.monthly.slice(rs,re+1).reduce((x,y)=>x+y,0);
+                          return tb - ta;
+                        });
+  const mx = Math.max(...visible.map(t => t.monthly.slice(rs,re+1).reduce((a,b)=>a+b,0)), 1);
+
+  document.getElementById('topic-tbody').innerHTML = visible.length === 0
+    ? '<tr><td colspan="5" class="empty">此區間沒有主題資料</td></tr>'
+    : visible.map(t => {
+        const et = t.monthly.slice(rs, re+1).reduce((a,b)=>a+b,0);
+        const pct = Math.round(et / mx * 100);
+        const tr = trendInfo(t);
+        // member chips — show at most 12, sorted by in-range total
+        const sorted_members = t.members
+          .map(m => ({ ...m, et: m.monthly.slice(rs,re+1).reduce((a,b)=>a+b,0) }))
+          .filter(m => m.et > 0)
+          .sort((a,b) => b.et - a.et);
+        const chips = sorted_members.slice(0, 12).map(m =>
+          `<span class="mchp" style="background:${t.color}18;color:${t.color}">${m.keyword} ×${m.et}</span>`
+        ).join('');
+        const extra = sorted_members.length > 12
+          ? `<span class="mchp" style="background:#eee;color:#999">+${sorted_members.length-12} 個</span>` : '';
+        return `<tr class="topic-row">
+          <td>
+            <div class="topic-name" style="color:${t.color}">${t.topic}</div>
+            <div class="topic-desc">${t.desc}</div>
+          </td>
+          <td><div class="cbar">
+            <span class="cnum" style="color:${t.color}">${et}</span>
+            <div class="cbg" style="max-width:90px"><div class="cbf" style="width:${pct}%;background:${t.color}"></div></div>
+          </div></td>
+          <td><span class="trend" style="background:${tr.color}22;color:${tr.color}">${tr.label}</span></td>
+          <td>${spark(t.monthly, t.color)}</td>
+          <td><div class="member-chips">${chips}${extra}</div></td>
+        </tr>`;
+      }).join('');
+}
 
 // ── bar chart ──
 function renderChart() {
