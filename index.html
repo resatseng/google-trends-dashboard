@@ -218,6 +218,34 @@ tr:hover td{background:#fafbff}
       <h2>📈 主題熱度趨勢</h2>
       <div class="line-wrap"><canvas id="lineChart"></canvas></div>
     </div>
+    <!-- Trend calculation explanation -->
+    <div class="card" style="padding:16px 20px">
+      <div style="font-size:.82rem;font-weight:600;color:#444;margin-bottom:10px">📐 趨勢計算方式</div>
+      <div style="font-size:.8rem;color:#555;line-height:1.8">
+        將選取的時間區間切為<strong>前後兩半</strong>，比較各半段的出現次數合計：
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+        <div style="flex:1;min-width:160px;background:#f3e5f5;border-radius:8px;padding:9px 12px">
+          <span style="font-weight:700;color:#7e57c2">★ 新興</span>
+          <div style="font-size:.76rem;color:#666;margin-top:3px">前半段 = 0，後半段 &gt; 0<br>從無到有，本期首次出現</div>
+        </div>
+        <div style="flex:1;min-width:160px;background:#e8f5e9;border-radius:8px;padding:9px 12px">
+          <span style="font-weight:700;color:#43a047">↑ 上升</span>
+          <div style="font-size:.76rem;color:#666;margin-top:3px">後半段 &gt; 前半段 × 1.2 + 0.5<br>熱度顯著提升中</div>
+        </div>
+        <div style="flex:1;min-width:160px;background:#fff3e0;border-radius:8px;padding:9px 12px">
+          <span style="font-weight:700;color:#aaa">→ 持平</span>
+          <div style="font-size:.76rem;color:#666;margin-top:3px">前後半段差異不顯著<br>熱度維持穩定</div>
+        </div>
+        <div style="flex:1;min-width:160px;background:#ffebee;border-radius:8px;padding:9px 12px">
+          <span style="font-weight:700;color:#e53935">↓ 下降</span>
+          <div style="font-size:.76rem;color:#666;margin-top:3px">前半段 &gt; 後半段 × 1.2 + 0.5<br>熱度明顯退燒</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:.73rem;color:#aaa;border-top:1px solid #f0f0f0;padding-top:8px">
+        ⚠ × 1.2 避免小幅波動誤判；+ 0.5 為低頻詞緩衝值。趨勢會隨選取區間變動，區間越短判斷越敏感。
+      </div>
+    </div>
     <div class="card">
       <p style="font-size:.8rem;color:#aaa;margin-bottom:14px">每個關鍵字只計入第一個匹配的主題，避免重複計算</p>
       <div class="tbl-wrap">
