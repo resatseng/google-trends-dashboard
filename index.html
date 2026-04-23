@@ -653,10 +653,13 @@ function renderTopicLine() {
       plugins: [rangeBandPlugin],
       options: {
         responsive: true, maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
+        interaction: { mode: 'nearest', intersect: false },
         plugins: {
           legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10, usePointStyle: true, boxWidth: 10 } },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} 次` } }
+          tooltip: { callbacks: {
+            title: ctx => ctx[0]?.label || '',
+            label: ctx => ` ${ctx.dataset.label}：${ctx.raw} 次`
+          }}
         },
         scales: {
           x: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } },
