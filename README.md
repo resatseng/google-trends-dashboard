@@ -66,6 +66,19 @@
 
 ---
 
+## 爬取條件
+
+| 參數 | 設定 |
+|------|------|
+| 地區 | 台灣（geo=TW） |
+| 時間範圍 | 過去 7 天（date=today 1-m, hours=168） |
+| 類別 | 商業與經濟（category=3） |
+| 資料來源 | Google Trends 熱搜榜 |
+
+每週執行一次，當月結束時彙整為月報（`monthly_trends_summary_YYYY-MM.csv`），再經白名單過濾後呈現於儀表板。
+
+---
+
 ## 自動更新流程
 
 資料更新完全自動化，由 Windows Task Scheduler 定期觸發：
