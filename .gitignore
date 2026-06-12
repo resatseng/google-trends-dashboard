@@ -1,0 +1,8 @@
+# 自動產生的日誌
+log.txt
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.env
