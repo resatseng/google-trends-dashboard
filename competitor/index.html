@@ -96,6 +96,26 @@
     background:var(--surface); color:var(--ink); font-size:14px; font-family:var(--font-body);
   }
   .search input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  #competitorSelect{
+    padding:10px 14px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); font-size:14px; font-family:var(--font-body);
+    max-width:200px;
+  }
+  #competitorSelect:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+
+  .index{ display:flex; flex-wrap:wrap; gap:6px; margin-top:20px; }
+  .index-chip{
+    font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
+    border:1px solid var(--border); background:var(--surface); color:var(--ink-dim);
+    cursor:pointer; white-space:nowrap;
+  }
+  .index-chip:hover{ border-color:var(--accent); color:var(--accent); }
+  .index-chip.neg{ border-color:var(--danger); color:var(--danger); }
+  .card.flash{ animation: flash-highlight 1.6s ease; }
+  @keyframes flash-highlight{
+    0%{ box-shadow:0 0 0 3px var(--accent); }
+    100%{ box-shadow:var(--shadow); }
+  }
   .toggle{
     display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--ink-dim);
     cursor:pointer; user-select:none; white-space:nowrap;
@@ -196,10 +216,15 @@
     <div class="stats" id="stats"></div>
   </header>
 
+  <div class="index" id="competitorIndex"></div>
+
   <div class="controls">
     <div class="search">
       <input type="text" id="searchInput" placeholder="搜尋競爭者名稱或新聞標題…" />
     </div>
+    <select id="competitorSelect">
+      <option value="">所有競爭者</option>
+    </select>
     <label class="toggle">
       <input type="checkbox" id="negOnly" />
       只顯示有負面事件的競爭者
@@ -218,7 +243,8 @@
 
   <footer>
     來源：Google News RSS（查詢詞＝競爭者簡稱＋「當機/裁罰/違約/倒閉/停業/求償/資安/客訴」），逐則由 <code>gemini-2.5-flash</code> 判斷「是否真的與該競爭者相關」與「是否為負面事件」，避免短公司名（如「正航」「凌越」）誤命中無關新聞。競爭者清單來自業務日報 L5_competitors 欄位萃取，並依客戶備註關鍵字（ERP/BPM/MES/SI）分類為「ERP専屬」與「ERP同類」。此看板僅供內部業務參考，負面事件仍建議人工複核連結後之原文再行判斷。<br/>
-    已排除非ERP情報範疇的名稱：<span id="excludedList"></span>（電信/資安服務、虛擬化基礎設施、顧問輔導、物流硬體等與ERP競爭無關）。
+    已排除非ERP情報範疇的名稱：<span id="excludedList"></span>（電信/資安服務、虛擬化基礎設施、顧問輔導、物流硬體等與ERP競爭無關）。<br/>
+    「本公司」區塊為鼎新數智(Digiwin)自身相關新聞，不限負面事件，逐則標示正面／負面／中性，供業務同步掌握公司公關動態與潛在風險。
   </footer>
 </div>
 
@@ -265,8 +291,14 @@
   }
 
   function itemHtml(it, q){
-    var pillClass = it.neg ? 'neg' : (it.about ? 'safe' : 'unrelated');
-    var pillText = it.neg ? '負面事件' : (it.about ? '相關・非負面' : '不相關');
+    var pillClass, pillText;
+    if(it.sentiment){
+      pillClass = it.sentiment === 'negative' ? 'neg' : (it.sentiment === 'positive' ? 'safe' : 'unrelated');
+      pillText = it.sentiment === 'negative' ? '負面' : (it.sentiment === 'positive' ? '正面' : '中性');
+    } else {
+      pillClass = it.neg ? 'neg' : (it.about ? 'safe' : 'unrelated');
+      pillText = it.neg ? '負面事件' : (it.about ? '相關・非負面' : '不相關');
+    }
     return '' +
       '<div class="item' + (it.about ? '' : ' dim') + '">' +
         '<div class="item-top">' +
@@ -304,14 +336,47 @@
     return true;
   }
 
+  var competitorSelect = document.getElementById('competitorSelect');
+  competitorSelect.innerHTML = '<option value="">所有競爭者</option>' +
+    data.competitors.map(function(c){ return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</option>'; }).join('');
+
+  var indexEl = document.getElementById('competitorIndex');
+  indexEl.innerHTML = data.competitors.map(function(c){
+    return '<button type="button" class="index-chip' + (c.negative > 0 ? ' neg' : '') + '" data-jump="' + escapeHtml(c.name) + '">' +
+      escapeHtml(c.name) + (c.negative > 0 ? ' (' + c.negative + ')' : '') + '</button>';
+  }).join('');
+
+  indexEl.addEventListener('click', function(e){
+    var btn = e.target.closest('.index-chip');
+    if(!btn) return;
+    var name = btn.getAttribute('data-jump');
+
+    document.getElementById('searchInput').value = '';
+    document.getElementById('negOnly').checked = false;
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    competitorSelect.value = '';
+    render();
+
+    var target = board.querySelector('.card[data-name="' + CSS.escape(name) + '"]');
+    if(target){
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('flash');
+      setTimeout(function(){ target.classList.remove('flash'); }, 1600);
+    }
+  });
+
   function render(){
     var q = document.getElementById('searchInput').value.trim();
     var negOnly = document.getElementById('negOnly').checked;
+    var selected = document.getElementById('competitorSelect').value;
     var ql = q.toLowerCase();
     var dFrom = document.getElementById('dateFrom').value;
     var dTo = document.getElementById('dateTo').value;
 
-    var filtered = data.competitors.map(function(c){
+    var filtered = data.competitors.filter(function(c){
+      return !selected || c.name === selected;
+    }).map(function(c){
       var itemsInRange = c.items.filter(function(it){ return dateInRange(it.date, dFrom, dTo); });
       return { c: c, items: itemsInRange };
     }).filter(function(x){
@@ -340,6 +405,7 @@
   }
 
   document.getElementById('searchInput').addEventListener('input', render);
+  document.getElementById('competitorSelect').addEventListener('change', render);
   document.getElementById('negOnly').addEventListener('change', render);
   document.getElementById('dateFrom').addEventListener('change', render);
   document.getElementById('dateTo').addEventListener('change', render);
