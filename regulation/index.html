@@ -1,0 +1,312 @@
+<title>法規商機看板</title>
+<style>
+  :root{
+    --bg:#F1F2F6;
+    --surface:#FFFFFF;
+    --surface-2:#E8EAF0;
+    --ink:#1B2030;
+    --ink-dim:#5B6072;
+    --ink-faint:#8A8FA0;
+    --border:#D9DCE4;
+    --accent:#B3651A;
+    --accent-soft:#F3E3D2;
+    --danger:#A8402F;
+    --danger-soft:#F6DEDA;
+    --safe:#3C7A5C;
+    --safe-soft:#DDEFE6;
+    --shadow: 0 1px 2px rgba(20,22,30,.06), 0 8px 24px -12px rgba(20,22,30,.14);
+    --font-display: "Iowan Old Style", "Songti TC", "PMingLiU", Georgia, serif;
+    --font-body: -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12141B;
+      --surface:#191C25;
+      --surface-2:#20232E;
+      --ink:#E8E9EF;
+      --ink-dim:#9CA0B2;
+      --ink-faint:#6B6F80;
+      --border:#2A2D39;
+      --accent:#E2A059;
+      --accent-soft:#3A2E1E;
+      --danger:#E27C6C;
+      --danger-soft:#3B2320;
+      --safe:#7FC79E;
+      --safe-soft:#1E3128;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12141B;
+    --surface:#191C25;
+    --surface-2:#20232E;
+    --ink:#E8E9EF;
+    --ink-dim:#9CA0B2;
+    --ink-faint:#6B6F80;
+    --border:#2A2D39;
+    --accent:#E2A059;
+    --accent-soft:#3A2E1E;
+    --danger:#E27C6C;
+    --danger-soft:#3B2320;
+    --safe:#7FC79E;
+    --safe-soft:#1E3128;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.5);
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1040px; margin:0 auto; padding:40px 24px 80px; }
+
+  header.top{ margin-bottom:32px; }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 10px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:600; font-size:clamp(26px,4vw,36px);
+    margin:0 0 8px; text-wrap:balance; letter-spacing:.01em;
+  }
+  .sub{ color:var(--ink-dim); font-size:15px; margin:0; max-width:64ch; }
+
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:1px; background:var(--border); border:1px solid var(--border);
+    border-radius:10px; overflow:hidden; margin-top:28px;
+  }
+  .stat{ background:var(--surface); padding:16px 18px; }
+  .stat .n{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; }
+  .stat .l{ font-size:12.5px; color:var(--ink-dim); margin-top:2px; }
+
+  .controls{
+    display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    margin:32px 0 20px; padding-bottom:16px; border-bottom:1px solid var(--border);
+  }
+  .search{ flex:1; min-width:220px; }
+  .search input{
+    width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); font-size:14px; font-family:var(--font-body);
+  }
+  .search input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .daterange{ display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-dim); }
+  .daterange input[type=date]{
+    padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); font-family:var(--font-mono); font-size:13px;
+  }
+  .daterange input[type=date]:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .daterange .clear{
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); cursor:pointer;
+    background:none; border:1px solid var(--border); border-radius:8px; padding:7px 10px;
+  }
+  .daterange .clear:hover{ color:var(--ink); border-color:var(--ink-faint); }
+
+  .board{ display:flex; flex-direction:column; gap:10px; }
+
+  .section-title{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-faint); margin:28px 0 4px; padding-bottom:8px; border-bottom:1px solid var(--border);
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .section-title:first-child{ margin-top:4px; }
+  .section-title .count{ font-family:var(--font-mono); color:var(--ink-dim); }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+
+  .card-head{
+    display:flex; align-items:center; gap:14px; padding:15px 18px;
+    cursor:pointer; -webkit-tap-highlight-color:transparent;
+  }
+  .card-head:hover{ background:var(--surface-2); }
+  .card-head .caret{
+    font-family:var(--font-mono); color:var(--ink-faint); font-size:12px; width:12px; flex:none;
+    transition:transform .15s ease;
+  }
+  .card.open .caret{ transform:rotate(90deg); }
+  .card-name{ font-weight:600; font-size:15.5px; flex:1; min-width:0; }
+  .card-name span.match{ background:var(--accent-soft); color:var(--accent); border-radius:3px; padding:0 2px; }
+  .badges{ display:flex; gap:8px; flex:none; }
+  .badge{
+    font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:12px;
+    padding:3px 9px; border-radius:99px; border:1px solid var(--border); color:var(--ink-dim);
+    white-space:nowrap;
+  }
+
+  .items{ display:none; border-top:1px solid var(--border); }
+  .card.open .items{ display:block; }
+
+  .item{
+    padding:14px 18px 14px 34px; border-bottom:1px solid var(--border);
+    display:flex; flex-direction:column; gap:5px;
+  }
+  .item:last-child{ border-bottom:none; }
+  .item-top{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .pill{
+    font-size:11px; font-family:var(--font-mono); padding:1px 7px; border-radius:99px;
+    flex:none; letter-spacing:.02em; background:var(--accent-soft); color:var(--accent);
+  }
+  .pill.scope{ background:var(--safe-soft); color:var(--safe); }
+  .item a.title{
+    color:var(--ink); text-decoration:none; font-size:14.5px; font-weight:500; line-height:1.4;
+  }
+  .item a.title:hover{ text-decoration:underline; text-decoration-color:var(--ink-faint); }
+  .item .meta{
+    font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint);
+  }
+  .item .reason{ font-size:12.5px; color:var(--ink-dim); margin-top:1px; }
+
+  .empty{ text-align:center; padding:60px 20px; color:var(--ink-faint); font-size:14px; }
+
+  footer{
+    margin-top:48px; padding-top:20px; border-top:1px solid var(--border);
+    font-size:12.5px; color:var(--ink-faint); line-height:1.7;
+  }
+  footer code{ font-family:var(--font-mono); background:var(--surface-2); padding:1px 5px; border-radius:4px; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Regulatory Triggers &middot; 商機情報</p>
+    <h1>法規商機看板</h1>
+    <p class="sub">從 Google News 查詢 ESG／資安／永續揭露等法規關鍵字，經 Gemini 萃取「法規名稱／生效時間／適用對象」，用來找出因法規壓力而可能產生 ERP／合規系統需求的潛在客戶輪廓。資料日期 <span id="genDate"></span>。</p>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="controls">
+    <div class="search">
+      <input type="text" id="searchInput" placeholder="搜尋法規主題或新聞標題…" />
+    </div>
+    <div class="daterange">
+      <span>新聞日期</span>
+      <input type="date" id="dateFrom" />
+      <span>&ndash;</span>
+      <input type="date" id="dateTo" />
+      <button class="clear" id="dateClear" type="button">清除</button>
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+  <p class="empty" id="emptyMsg" style="display:none;">沒有符合條件的結果</p>
+
+  <footer>
+    來源：Google News RSS（查詢詞為法規/揭露義務關鍵字，如「永續報告書 強制申報」「資安法 適用對象」「ESG 揭露 強制」），逐則由 <code>gemini-2.5-flash</code> 判斷是否為具體法規新聞並萃取生效時間與適用對象。此看板為候選訊號初篩，實際受影響公司仍需回頭比對法人資料庫（上市櫃狀態、資本額、行業別）才能產生正式名單。競品新聞另見「競品情報看板」。
+  </footer>
+</div>
+
+<script>
+(function(){
+  var data = {"generated": "2026-08-18", "topics": [{"query": "永續報告書 強制申報", "items": [{"regulation": "永續報告書", "effective": "", "scope": "", "reason": "新聞標題提及「永續報告書怎麼寫」，永續報告書是企業因應法規或揭露義務所需準備的文件。", "title": "永續報告書怎麼寫？商研院帶您一次掌握 - 經商新聞", "source": "經商新聞", "date": "Tue, 18 Aug 2026 02:45:27 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE9zZktyYVA3djl0TG4tX2FGY0hWSkpaVTVKRFh5ZGlGV1owMjM0ckR6NUJmY3Fuc0JUUGhhMlFSS3lxS0RzN0x0UGVrYU9mQQ?oc=5"}, {"regulation": "永續報告書", "effective": "", "scope": "中小企業", "reason": "永續報告書上路，中小企業為符合揭露義務將面臨資料收集、整合與報告編制挑戰，可能需導入或升級相關系統。", "title": "永續報告書上路！中小企業挑戰才開始 - ESG遠見", "source": "ESG遠見", "date": "Fri, 19 Sep 2025 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE9vVF91UUJ1blZVdnM0eV9aU085TUI3dGtpOXFpS21Kd0dNdXhNY0xzUUlqX0x6NTd0cXd5aUdYQmJnbUY3ZURYd2JZeHpNZw?oc=5"}, {"regulation": "永續報告書強制揭露義務", "effective": "2025年強制揭露", "scope": "上市櫃公司 (間接影響中小企業)", "reason": "新聞明確指出2025年上市櫃公司需強制揭露永續報告書，未遵守將受罰，這將驅動企業導入或升級系統以符合ESG數據收集、管理與揭露要求。", "title": "2025上市櫃強制揭露永續報告書！四成還沒編，違者最高罰1百萬，對中小企業有影響嗎？ - 今周刊", "source": "今周刊", "date": "Mon, 21 Oct 2024 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTFA1dXRRWUt5WElsbzROOEFfNzR5M3psVUxUOVhwWHJWdEYwTmJ3aENLMnE0LU1SSy1MMG81LWktcDhrMnBIckp5S0dReXkxU0l6Y0wyVzlYSFNpeFhtSGhwbGZYdmoxXzZDSll3ZFB1RzJ1c3FILXFxODdlU2VKMWs?oc=5"}, {"regulation": "永續報告書申報", "effective": "8月底前", "scope": "全體上市櫃公司", "reason": "新聞明確指出全體上市櫃公司須申報永續報告書，並有截止期限與罰則，屬於具體的法規揭露義務要求。", "title": "全體上市櫃8月底前應申報永續報告書 未繳交最重恐罰百萬 - Yahoo股市", "source": "Yahoo股市", "date": "Thu, 03 Jul 2025 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiigNBVV95cUxQYk5DVTMyMG8xemZ2emI3VU1kcHRQRGZOS0lleWpPRmxDWHlpVHdzUHBkYlg4RTBWdHZHTV92MW5temlfZjlWeU9TUGhXMW9hX3ZXQk5ISFpUV2J4S0JuTnVELWg2d0RTVXF6czJTem9JT1d3dFd4dm4yVHpMNHVpbG9PUXE4YnhFTGlrbjhaekdIQXJFcGg0SnJJUllrVTFCWWhkSlhIaDVpbjF5b3U3b3pXTDViZlNJVFAxdEpJTElBZUdMd3c5MWEwVHRHY2k3NllScHVPUFRfM2x1SzdDdW9hSzdLcW90bTYwNTZqVmpmQnJiRjhzZXpoX3ltXy0yYjE5WW1XbnVuLWNtMVRqTVowRUM3TmJoYWNUUGZrdWdLcmZ6YktTRjVrZ180SVZNcjlUcnhxUllPSzV5RmRUeXcwejcyblNhNlpBTjhfN1JVVU9yN0IyZ19kYUJ1LXY0UkRVN1dMWlpIbWtOckYtZFZidERXRm1tUnVYb2tyeUEyMFhlYU9KLWhn?oc=5"}, {"regulation": "永續報告書（ESG永續報告書）", "effective": "", "scope": "上市櫃公司", "reason": "新聞指出上市櫃公司因未提交永續報告書將被處罰，明確指向一項具體的法規揭露義務。", "title": "上市櫃未交永續報告書將挨罰- 日報 - 工商時報", "source": "工商時報", "date": "Fri, 04 Jul 2025 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5DUEVrOE9abTRScERrN3BydkhYWGJhUS1wdXRWTi14dnF3eFdMYUN5YldQNzllcnlibEpEMmRUYmM2cWpLOTUtSzg0M21CZUd0WXhtZVc0TDNPNmRYbGU0?oc=5"}, {"regulation": "永續報告書揭露要求", "effective": "", "scope": "上市櫃公司", "reason": "新聞指出上市櫃公司永續報告書揭露缺失將受罰，促使企業需強化永續資訊管理與合規揭露能力，以避免風險，可能需要導入或升級相關系統。", "title": "防企業漂綠！上市櫃公司永續報告書重大揭露缺失 最高罰1百萬 - ubrand.udn.com", "source": "ubrand.udn.com", "date": "Sat, 15 Jun 2024 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5PQmV4M0lfTC05UXhDTTZpTGt0SmhVXzc1cnNuWUpjc0VVNEhsMzdzSmdPWDdvNlRUTE5Pa2pEODZTMnRXS0dYSjFZbmhncnQxeFBEellVdld0Z0NCeGVn0gFkQVVfeXFMTndLMXR1S1BFUWotbVl3em9WOWpmU0hiN191TklmaUVuM1hsblMydXFzRGdvcnlwUEZWTGEweWRVdzFmX1llcWEyRFNiMkdON3BxOGVoOEhvUFB4VThyV2FyR1NFdQ?oc=5"}]}, {"query": "資安法 適用對象", "items": [{"regulation": "資通訊設備分級管理須知", "effective": "", "scope": "公務出國相關的資通訊設備使用者（如：政府機關、公務員）", "reason": "資安署發布具體的資通訊設備管理須知，將要求組織對其設備進行分級管理並可能實施相關管控措施，需系統輔助以符合規範。", "title": "公務出國資通安全不打烊，資安署公布資通訊設備分級管理須知 - iThome", "source": "iThome", "date": "Tue, 11 Aug 2026 10:17:34 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE5rU3Z4azE2NTl4dHdybFVpVllPMHFHemZrX3E0R2Q2eVBQQnNLYmNyX1A4ZXl3cnRRczVPRWxkUXpuT0lxcnBDbWpjNTBnZw?oc=5"}, {"regulation": "中共《網絡安全法》", "effective": "", "scope": "在中國境內營運的相關企業及機構", "reason": "新聞標題明確指出中共《網絡安全法》正在進行修法評析，預示著相關合規要求的潛在變動。", "title": "中共《網絡安全法》首次修法評析 - 國防安全研究院", "source": "國防安全研究院", "date": "Tue, 02 Dec 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE9mWkJVOTltVjduMGpBRkowV19LRGNtZE4yUDRuTTBXbU1sZkZwaXZsaHRSX2d3UkJISHRqZ0tWMHAtdWVmQnhhS2NsZm95UFhERklZRWgyalFBOU9wbTBfWVR3?oc=5"}, {"regulation": "歐盟NIS2、CRA資安法規", "effective": "將上路", "scope": "台廠", "reason": "新聞明確提及歐盟NIS2與CRA兩項資安法規將生效，並指出台灣廠商將面臨合規挑戰，可能衍生系統導入或升級需求。", "title": "歐盟NIS2、CRA資安法規將上路 台廠面臨合規新挑戰 - 樂聯網", "source": "樂聯網", "date": "Thu, 09 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiS0FVX3lxTFBPT2lKZllLNkJoTXVHN2FrZjltX291Rm1yZ1FiVGE1aHVZalFZeGJuUWE5bjFLeHV0TXpqSmlKSzlrWW9UMXhoZlFhNA?oc=5"}, {"regulation": "歐盟NIS2、CRA資安法規", "effective": "", "scope": "台廠", "reason": "新聞標題明確提及歐盟NIS2與CRA兩項具體的資安法規將上路，並指出台廠將面臨合規挑戰。", "title": "歐盟NIS2、CRA資安法規將上路 台廠面臨合規新挑戰 - 墨新聞-MORE News", "source": "墨新聞-MORE News", "date": "Thu, 09 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiQkFVX3lxTE1BaHJic3FGZFQ4TlFHcUEyQWlkVEpnU0oxMGVRVHJEb0R2UVRsLTJGMjZPTTJ1TnFFcDhrMzJHTF9ndw?oc=5"}, {"regulation": "資通安全管理法", "effective": "", "scope": "企業", "reason": "新聞標題明確提及具體法規《資通安全管理法》，該法規要求企業提升資安維護能力，可能涉及系統導入或升級。", "title": "從《資通安全管理法》看企業資安維護 - seftb.org", "source": "seftb.org", "date": "Fri, 17 Sep 2021 07:10:54 GMT", "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTFBLYnhTRUItNmJMcDg5cEtUMXRZc1dqbHdHTGwwQ0FzQVhYWlVyX1p1TWdaVnV0Y2FNSjdOUDFhUnFCazlzTGxNbGZMVDJtNF9YX1NNNW9oaw?oc=5"}, {"regulation": "資通安全管理法", "effective": "", "scope": "", "reason": "新聞標題明確提到《資通安全管理法》這項具體法規，且強調資安法遵需求，可能驅動企業導入或升級相關系統以符合法規要求。", "title": "資安法遵師一定要懂《資通安全管理法》！了解如何透過法律規範降低資安風險｜工作甘苦談面試經驗暨工作甘苦談 - 1111人力銀行", "source": "1111人力銀行", "date": "Mon, 12 Aug 2024 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5iY0lyZXdjZFhjeUF0ZVpsRUVvNEg5UVQ1VWI2Z01wajJDWUtnLXpFNlk4RlI1aXQtN3JobTI4X05FMElfMlZZWkJXZ3FZMVJlSkJVd1B1eEc2elV0SG13eElSWlBVZTFKeEluMnpfaVFKejFPTE5IVDRkUURTNkE?oc=5"}]}, {"query": "ESG 揭露 強制", "items": [{"regulation": "企業永續揭露規範 (含範疇三碳排放與本土碳排係數相關)", "effective": "", "scope": "企業", "reason": "新聞明確指出環境部與金管會正在協調「企業永續揭露規範」，並提及範疇三確信與本土碳排係數等具體細節，預示將有新的永續資訊揭露義務。", "title": "環境部、金管會聯手協調企業永續揭露規範，範疇三免強制確信並將建立本土碳排係數 - iThome", "source": "iThome", "date": "Wed, 17 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE5MMWc0cU1kUEQtVW02bVcxMFFCMEdMNnN1dkRDMjc5ZlBpWHItRmpNMEZ2VllLQVdpVTdKX0pPUW1WODVaMlVqQlpBVHNNZw?oc=5"}, {"regulation": "強制性自然揭露", "effective": "2026年上路/生效", "scope": "企業", "reason": "新聞明確指出『強制性自然揭露』將於2026年上路，企業將面臨新的揭露義務，需要系統支援以轉化自然風險為自然資本。", "title": "【2026永續新挑戰11】強制性自然揭露即將上路，企業如何將自然風險轉化爲自然資本？ - csr.cw.com.tw", "source": "csr.cw.com.tw", "date": "Mon, 20 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiS0FVX3lxTFB0d3VIQnhuM0RYbUpTbXFTYUZobjFCejUtbEg0U0JUZWFRLW5RSExtQnBMZi1Idko4ajFaUUJvakxldzdCVnFObGJmQQ?oc=5"}, {"regulation": "韓國KOSPI大企業ESG資訊強制揭露", "effective": "2028年起", "scope": "韓國KOSPI大企業，資產逾10兆韓元先行、逐步擴大", "reason": "新聞明確指出韓國KOSPI大企業將於2028年起強制揭露ESG資訊，涉及具體的生效時間、適用對象和義務內容，符合法規要求特徵。", "title": "韓國KOSPI大企業2028年起強制揭露ESG資訊，資產逾10兆韓元先行、逐步擴大 - BigGo 財經", "source": "BigGo 財經", "date": "Tue, 07 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTFBHQ0VHcTRfTWN5YzluWmJ0djNDU2l4amRnRjVncFhaYzdhMnZ5M3l1R3ZNS1JENDhQaG91YzBzRTFIZF95eGxiUDNUeURsZnVSTEp0eHBWQ3NZVVRmRElKcUlkZU5VV2hFMzVKSnRTbnVjell0UW16b1R3?oc=5"}, {"regulation": "TNFD, CSRD", "effective": "", "scope": "需因應自然相關財務風險並進行永續與財務揭露之企業，特別是大型企業或上市櫃公司", "reason": "新聞提及TNFD、CSRD揭露要求升溫，企業需強化自然風險管理與相關資訊揭露，可能需系統支持資料蒐集、分析與報告。", "title": "自然風險管理不當竟讓市值蒸發90%？TNFD、CSRD揭露要求升溫，企業如何應對財務風險新時代 - 今周刊", "source": "今周刊", "date": "Tue, 07 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE4yUVhaRExra2dadVAzWUR6aUxnYVd2cHRCWTFSR0g0VGFDSDFHcEtLXy1EbkU5bHZ2a2t2Y2dTOEY3YXdJa0Zscm5FamhnWE02ZWRlVURQbE11eUVkWFgyVGZ4WnJKMDRZUHNMNWVJbG41NUQ5T1BCN01iRExPYkU?oc=5"}, {"regulation": "ESG永續報告書揭露要求", "effective": "2025年", "scope": "", "reason": "新聞標題指出永續資訊揭露要求將接軌國際準則並深化發展，2025年TESG永續發展指標的更新將驅動企業提升ESG報告品質與數據揭露能力，屬於深化發展的揭露義務要求。", "title": "接軌國際準則、永續資訊揭露邁向深化發展 - TESG永續發展指標2025年最新評等發布！ - tejwin.com", "source": "tejwin.com", "date": "Mon, 03 Nov 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxPOVBLOWlWcnJCczdyeVlyN1BlUnZrQ0JvSUJ3SVpzSU1rZFpReGx2SWloQm1SaTJ1N1Y5SjJ1U1JqVUhFSlpmMGFQYXlIMGdTNFRnTWw4cTBwQ21lUThZZTdydUFxbDJfSFhRaEc4VzlXUXN4X0phU0xXZC1aYlk5d0t5dTlUVXN0dzhkY1JVb1lPREhyazhjelliLTdCeHpvYjlwRWNheVNNWU9xWU9jRW0zNFFfeXpwenNGTTIwZy1hLVpWU2NJVFowYkNWV3MycU9MVUZxTlFiLWV0SXZEZVdEMlRYNEpoSXRB?oc=5"}, {"regulation": "淨零建築強制光電及揭露規定", "effective": "4月開始揭露，8月開始強制實施", "scope": "建築物所有權人、開發商、營造商及相關設施營運方，特別是符合淨零建築目標或被要求設置光電之建築物。", "reason": "新聞明確指出「強制光電」和「4月揭露」等具體時間點的法規要求，預期會驅動建築相關方對應法規、數據揭露及驗證的需求，進而導入或升級相關管理系統。", "title": "淨零建築進入驗證時代 4月揭露8月強制光電 在一起永續、睿田能源搶商機 - cna.com.tw", "source": "cna.com.tw", "date": "Wed, 08 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFB6R2tsY1hiaWwzclRDNEo4RFVLWXlUZjhVM0NSaWNJZDBCR0JYTEszUjFRSmlmejNiSGRHaEFPUG9Hc3dOdzBGTVU3TGNCYlJlTVhadFpCTWZudw?oc=5"}, {"regulation": "永續揭露義務", "effective": "", "scope": "上市櫃公司", "reason": "新聞標題明確指出永續揭露從自願走向強制，顯示企業將面臨強制性的ESG資訊揭露要求，進而產生導入或升級相關系統的需求。", "title": "資本市場的無聲立法：當永續揭露從自願走向強制 - ETtoday永續雲", "source": "ETtoday永續雲", "date": "Wed, 01 Oct 2025 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE5PWUtXYkkzZ2xEVkNOY09kRDFkcTdEZ3c1Wm5mSENTcnVlQ1ItdGJVcm5SSjJoQ014OTR3VV8tUlZZaURTdFhYTHhlZkfSAUtBVV95cUxNYzY4aWI2dXU3Z0pGSjhlRTNnZEY4LTUzeVRiaXdKaFZqb0dWWHUyMjRHQzJ3TFpTUU1VU1o1Zjl6YkVvMjhlVldCdXc?oc=5"}, {"regulation": "ESG永續報告新規範", "effective": "", "scope": "", "reason": "新聞標題明確指出「ESG全揭露時代來臨」和「永續報告新規範」，表示企業將面臨新的ESG資訊揭露要求，屬於具體的法規或制度要求。", "title": "ESG全揭露時代來臨！企業如何因應永續報告新規範？ - ESG遠見", "source": "ESG遠見", "date": "Wed, 21 Aug 2024 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE0zNzBPSU1ZZnF1ODVFd1hqQmYwLUdPWHRrR1lEQ2pwRzAwSnBtQ3g0dVpGLWlUakc2dGNRU2l0XzBPOW45VlFZeFRkV3A?oc=5"}]}, {"query": "電子發票 強制", "items": [{"regulation": "電子發票", "effective": "這年", "scope": "約7萬家曾免開發票的商店/商家", "reason": "財政部強制要求曾免開發票的商店開立統一發票，企業需導入或升級系統以符合發票開立與申報義務。", "title": "免發票時代終結！財政部祭大絕 這年強制開發票7萬家店恐受影響 - 三立新聞", "source": "三立新聞", "date": "Wed, 18 Mar 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE5UTjJnblhXWUZTZ3hsN0dXNS0xUjB6TU1DeXp3cFFnSFpBQk1yQkM3NC1WaWd2RWZkUXN3aE1NS01LYUluclB6T0lzbw?oc=5"}, {"regulation": "電子發票", "effective": "2029年起", "scope": "月營收20萬以上的餐飲業者", "reason": "此法規要求月營收達標的餐飲業者導入統一發票開立機制，將可能需要升級或導入新的ERP系統或電子發票解決方案以符合法規要求。", "title": "7萬家餐飲業者注意！月營收20萬以上　2029年起要開立統一發票 - ETtoday財經雲", "source": "ETtoday財經雲", "date": "Tue, 17 Mar 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFBkVHlwY09xSkRqTVhoeG5IOWNTcV9IRTg1TUhiQTZwVXh0Nm5mejhlRVQxSWFmNGM1ekVQTjFFQUxoQ0RtM1ZOd0VpNW9FajI5MGfSAVBBVV95cUxNNkV5WGg1TEJ4M0J1TkhkWHpsTm1RZURMM3dxellBUk1jcFJ6Q2QwdG9ndTRLVGJsNGVxTUdQVDB4ZWRPTGRzVmRBNXE3TG1idA?oc=5"}, {"regulation": "強制開發票", "effective": "2029年", "scope": "小吃店 (將依關鍵營業額決定)", "reason": "新聞報導指出財政部可能在2029年強制要求小吃店開發票，涉及企業需導入發票開立系統以符合稅務規定。", "title": "便當要漲了？傳小吃店2029強制開發票 財政部曝關鍵營業額：7萬家數字不對 | 李瑋萱 | 新聞 - 風傳媒", "source": "風傳媒", "date": "Fri, 20 Mar 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE9DTUVJMnVHQ1gzSWFNSWZ0TWFGdkhSeFhWelhWcE1rMkNMSHhvbmhFSWhqbnI5a3VYSDNDemZWX3NsYUUyV1lORXBWZWtGZw?oc=5"}, {"regulation": "統一發票及電子發票相關服務升級", "effective": "7月1日", "scope": "所有需使用或與統一發票系統整合之台灣企業", "reason": "統一發票官方APP進行重大改版，推出新功能與服務，企業需配合調整發票處理流程與系統整合，以符合稅務機關要求。", "title": "統一發票官方APP大改版8大升級服務7月1日登場- 產業 - 工商時報", "source": "工商時報", "date": "Mon, 29 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFA1Y3FieXVTTFpJMW55eHl0aDlINEc3cDFEQzRUMk1GQkN1bHNudFZPNnQxa0xwMVJTT3FSV3VHcGtrcjlGY19KLXNWd2NKTFVzWVBRQmRYU2JxQWotTmRR?oc=5"}, {"regulation": "發票開立規定 (營業稅法)", "effective": "", "scope": "全台小吃業者 (餐飲業、小規模營業人)", "reason": "財政部終結「免開發票」時代，擴大適用範圍，要求原免開發票業者開始開立發票。", "title": "「免開發票」時代終結！財政部出大絕 全台小吃恐迎漲價潮 - 中天新聞網", "source": "中天新聞網", "date": "Wed, 18 Mar 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBCUG90TUNfa21jRTVFOEFtdFQweldjOWdqWU9XbldrQnpxQUgzTnJzWVp4YTA2aDVvd1NiMGVkcHV4d3NhM3RvekxaTzJUZFJzb01z?oc=5"}, {"regulation": "電子發票相關法規或制度", "effective": "", "scope": "", "reason": "新聞提及稅務軟體商Vertex強攻「電子發票商機」，電子發票的實施在全球範圍內常由各國政府的稅務法規或政策要求所推動，企業為遵循這些要求可能需導入或升級ERP、稅務管理或合規系統。", "title": "【即時新聞】稅務軟體商 Vertex(VERX) 獲利超預期，新 CEO 強攻 AI 自動化與電子發票商機 - CMoney投資網誌", "source": "CMoney投資網誌", "date": "Thu, 12 Feb 2026 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPQ3ZOSGRuczFqRnBJbG9ZNE12ZlF0cDZfaXozS1FkUXNMZDBJRzMxcFoyNldzT0VEbXpEUHNQMG92RDMzOFktdC1kSFp5eTFFa3h0aGNNc0ExSERRd1g4UEM0dUpuOHVRYTBpc2Jrb3c0Y3BfZUJSSkRUNzExTXhiZTJTb2NhbmNpa2dkTUpqY0c?oc=5"}]}, {"query": "碳盤查 申報", "items": [{"regulation": "碳盤查與申報要求", "effective": "", "scope": "高雄地區年碳排逾1萬公噸的海空雙港事業體", "reason": "新聞明確指出高雄擴大列管年碳排逾1萬公噸的海空雙港事業體，表示這些企業將面臨碳排放的監管與申報要求，屬於具體的法規義務。", "title": "考量環境特殊性 高雄擴大列管碳排年逾1萬公噸的海空雙港事業體 - UDN", "source": "UDN", "date": "Thu, 09 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE1RLUo3LTk5SUVONzExT0dDMG9jclpBMFZfTkMtZnZGbVZYLVdjN2JUQkJ4UlZMNU5QT2FZaWlxbXRjWHRPV2NEay1CRXp1VjhZ0gFWQVVfeXFMT1VUck50cnR4WExMUmhDQmlrTWxwNzRra0h3cVhObUVsNktqbXl4c1NKNnYwTmFYWmEyOVZLUVJVNnRFQWtLYlc3Uml5RG13bkQzbHZQUUE?oc=5"}, {"regulation": "高雄市碳排放納管要求", "effective": "", "scope": "高雄市海空雙港區內，年碳排放量達萬噸的事業單位", "reason": "高雄市針對海空雙港區內年碳排放量達萬噸的事業單位實施納管，要求其進行碳排放管理，違者可受罰，預期將產生導入碳盤查及合規管理系統的需求。", "title": "高雄「海空雙港」納管萬噸碳排事業 違者可重罰10萬 - 自由時報", "source": "自由時報", "date": "Mon, 20 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5UMjFhb2xra1JwZEJacEdjQzJPaUJoRGM3S0VrSkF2Z1RDakZaaHNFRkgwMmpKVUEyN21TbWVxeko5bVg1VWhTenZ4UW5zQkFyTmF1X1R3OVFhNU1YMmhMcXRTQUjSAWpBVV95cUxNUUo3REpvTGlHeG9fVEs2VDhEcmhYYzl6cWRhZk1yOVZHQ3Q3aFAzNjZZWU95YnVabU9qNmFyVm1yQkFMQkVuR19rYlliS3JCRmJYekhxVVRpVG5QWVJ0MHQyaVcwVm1LUjB3?oc=5"}, {"regulation": "碳盤查申報", "effective": "", "scope": "連鎖業", "reason": "環境部推出針對連鎖業的碳盤查簡化申報工具，表明連鎖業有碳盤查申報義務，可能需要系統協助數據收集與申報流程。", "title": "碳盤查不求人！環境部推「連鎖業簡化工具」， 三步驟輕鬆完成申報 - CSRone 永續智庫", "source": "CSRone 永續智庫", "date": "Thu, 02 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiQkFVX3lxTE5EOXNDVTRlZkRPUzJLN1lwNWVhTmJ2dTVybWxjbURYaDB3ZVEtSld3NUY4VkxtS3Ruc1JOOGdleExLQQ?oc=5"}, {"regulation": "溫室氣體盤查申報", "effective": "申報倒數一週 (申報期限)", "scope": "未登錄的企業", "reason": "法規要求企業進行溫室氣體盤查申報，未申報將面臨罰鍰，顯示企業需導入系統以符合申報義務並避免罰則。", "title": "溫室氣體盤查申報倒數一週，環境部提醒未登錄的企業最高恐罰百萬元 - iThome", "source": "iThome", "date": "Fri, 24 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE93UmVBbGpIUW9BMjRzNXVKdVo2NHBNVXluUjJ5VW00S09oNHpXbTFLODM5RExkdUU3dWV5VVg3TGhvYUMxbHQ3NnZYbF9sZw?oc=5"}, {"regulation": "企業碳盤查及範疇三揭露規定", "effective": "", "scope": "企業，新聞中特別提到中小企業範疇三揭露規定有望鬆綁，暗示其他企業仍受規範", "reason": "此新聞說明碳盤查及範疇三揭露是企業需要面對的法規要求，即便中小企業規定有望鬆綁，其他企業仍有導入相關系統以符合法規的需求。", "title": "減輕企業碳盤查壓力！環境部、金管會同步盤查作業時程，中小企業範疇三揭露規定有望鬆綁 - 今周刊", "source": "今周刊", "date": "Tue, 23 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTFB3T1FLbHVoWGIwaVNJNUp0amlfRVNzMG51aFdCcV9EV2d3MmxvV1JVZHltRm0wRV9GUTVYcHZGc3NFMk9xSDZWem1rVGYtbFY4TVVIRDdpT0E5Ym9rUjNIdDZCXzBZVl9QSFFSM21VTjZPOTVUZ08tNXltOUcySFU?oc=5"}, {"regulation": "碳盤查列管要求", "effective": "", "scope": "高雄市轄內年碳排一萬噸以上之海空雙港事業", "reason": "高雄市擴大碳盤查列管範圍，受列管事業需系統化管理碳排放數據以符合申報義務。", "title": "擴大碳盤查 高市列管年碳排一萬噸海空雙港事業 - 中華新聞雲／中華日報", "source": "中華新聞雲／中華日報", "date": "Thu, 09 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE55Z1ExWTV4a2VOenlGTEp4TUdxOFB4SnBZWE5JaGhBUENIeXg2ZHpQdDBETUYxLXZIQ2sxTTZOTVZ5LWtvcmtLLTBFTnNGX1JfZGc?oc=5"}, {"regulation": "高雄市擴大列管碳盤查", "effective": "", "scope": "高雄市轄內年碳排量達1萬噸以上之海空雙港事業", "reason": "高雄市擴大列管海空雙港事業的碳盤查，將促使相關企業需要導入或升級碳排放數據管理系統以符合法規要求。", "title": "擴大碳盤查！高雄市列管年碳排1萬噸海空雙港事業 | 徐炳文 | 地方新聞 - 風傳媒", "source": "風傳媒", "date": "Sat, 11 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFB0R0VsckVGTGRoZzdmTjAwTVVlUy1KdUFYN1ZtUHBZb191Y3F1cElZdm9qMGxscGxyR2NQRFNtOGxfVnhocjJjYWdlelNPUQ?oc=5"}, {"regulation": "碳盤查申報", "effective": "4月底截止申報", "scope": "超商、大學", "reason": "新聞標題明確指出超商與大學需要進行碳盤查並有申報截止期限，此為一項具體的法規或揭露義務要求。", "title": "超商、大學也要碳盤查！環境部推「自動化工具」 4月底截止申報- 生活 - 工商時報", "source": "工商時報", "date": "Wed, 01 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFB3YzlxbThHUnFRUEI4Qmk2dGREbkxKNjlQZTVpd3ktS0g5cEprNWZSdDZlU2dKbHNlSnlSS082djcyeU1IcVdfOG8tR2dZYkoxeWt4ejc0SHpXTThBN2hr?oc=5"}]}, {"query": "碳費 徵收對象", "items": [{"regulation": "碳費制度及碳費收費辦法", "effective": "", "scope": "", "reason": "碳費制度要求企業進行碳排放量盤查、計算與申報，直接驅動對應的數據管理、合規申報功能需求，可能需要導入或升級ERP或合規管理系統。", "title": "碳費制度以減量為核心，務實修正碳費收費辦法部分條文 - 環境部新聞專區", "source": "環境部新聞專區", "date": "Thu, 06 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5vX2Zqd1ZUY2ZBbjFkUkFqZ2ZRcExlaU0za1I0QjkwM3lLaG14QWJtaGRlSEFzYTRUdm4zUDI3dzdVU1loVXRSbnJlZUl2bDVyUm9PZzRWQ2JXbnEwZTdEeGRMeGY?oc=5"}, {"regulation": "碳費 (Carbon Fee)", "effective": "2026年 (碳費進帳/開始徵收)", "scope": "高碳排產業，新聞中特別點名半導體業與能源部門", "reason": "新聞明確指出2026年將徵收碳費，這是一項具體的法規要求，企業需進行碳盤查、申報以計算及繳納碳費。", "title": "2026碳費進帳49.7億元、半導體繳22億居冠 能源部門碳排首見減量，但2025減碳目標恐落空 - csr.cw.com.tw", "source": "csr.cw.com.tw", "date": "Thu, 04 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE1IVHplWGFuaENqVHlTS05iWXlEeVZOQTlNSlpjMHdkblNkX1VCLTJLcERnOS03aTY1T0taVnYxWFVqYkdYNGR5MmowQQ?oc=5"}, {"regulation": "碳費", "effective": "", "scope": "402家指定排碳大戶", "reason": "台灣碳費已首次開徵，業者需導入碳盤查、減量管理及費用計算系統以符合法規並爭取優惠費率。", "title": "台灣首次碳費進帳49.7億元 402廠自主減量換百元以下優惠費率 - 環境資訊中心", "source": "環境資訊中心", "date": "Fri, 05 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1NQVhPSElwRXZBZWRLZlZHRDNRcVFwdUt5QUxyS0ZzRnVSa2dGMW5ycXV6Y3p1ZUpTN0NJS2VKeHAwQ3NUdzZETA?oc=5"}, {"regulation": "碳費/碳稅制度", "effective": "", "scope": "", "reason": "新聞預示碳費制度可能調整或轉為碳稅，將影響企業碳排放計算、申報與成本管理，需要相關系統支援合規。", "title": "碳費運用公聽會 專家建議調漲費率、碳稅取代碳費 - UDN", "source": "UDN", "date": "Wed, 12 Aug 2026 04:47:04 GMT", "link": "https://news.google.com/rss/articles/CBMiUEFVX3lxTFBuWW9kMzNSdy16aFdWSjVKN2hXQWhxdjc0NnpYbjBMeUhpbE5JQjhWaFE1bEhTM2Jmb1BQNGZJUW1BY3k5cEdVQnRYVG13MjFq0gFWQVVfeXFMT0kwSXZhemU4dEZTSGNTSmg5MGYzYk9xOEdjSFpaY2ttcVFSZy1ZSG12QkFKTk1DN1VRZTFFWWctc1R1MFExQVpPTlhZTUVoQVRiY2VZWFE?oc=5"}, {"regulation": "碳費", "effective": "", "scope": "收費對象", "reason": "環境部將收「碳費」將促使企業需要導入或升級系統來追蹤碳排放數據、進行盤查、計算費用並管理合規，以符合法規要求並爭取折扣。", "title": "環境部將收「碳費」 收費對象、折扣條件一次看 - 公視新聞網PNN", "source": "公視新聞網PNN", "date": "Fri, 19 Dec 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5BS1RFZGFCelJwdUZFUFBObE9seExKWGdpbl9rNHdodFQ5bXR5Zjh3NkFLc0diSTl4V1ZTUFF5cWlsaVg2MXlSbWQ0RkJISWs?oc=5"}, {"regulation": "碳費", "effective": "台灣首年徵收", "scope": "企業", "reason": "標題明確指出台灣開始徵收碳費，此為具體的法規要求，將促使企業進行轉型並可能需要導入相關管理系統。", "title": "碳費只是起點：從台灣首年徵收，看見企業面對的六大轉型訊號 - CSRone 永續智庫", "source": "CSRone 永續智庫", "date": "Wed, 24 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiREFVX3lxTE9rbWRITTRBUEJzYjRfUUQteUt1LVFHOXo5aHBEMmhnZFhmNkFBSk82TXh4R3JPUUVsU1ZrUHZ0cUd6UWRM?oc=5"}, {"regulation": "碳費制度", "effective": "首次納管企業獲緩衝期（具體緩衝期長度未明）", "scope": "首次納管企業", "reason": "碳費制度的實施將要求企業進行碳排放盤查、計算與申報，並可能影響營運流程，需要ERP或合規系統支援數據管理與申報。", "title": "碳費制度再調整，首次納管企業獲緩衝期 - TechNews 科技新報", "source": "TechNews 科技新報", "date": "Wed, 22 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNdkdsS3ZHUDlpa3RKQUEtYXVhU3hoS04tcGhjOEJqMUdqV2RPVnE3cDByWUpEWV9rX3d6bXk4VGdpN1RWZ3FRcmFfZ0I2Yk5jM1BRZnBDUkJuLVVCaEdNa09CMkVPN2M4UUh4SVA4RmE1TThMQXE2QXVFWHlPTEplYVduNno2bnpyaS1yRGNlQ1lIdEJGUWxYTE9nb3NFak50dExtNHI0V21SNzN0?oc=5"}, {"regulation": "企業自願減量專案", "effective": "", "scope": "所有企業", "reason": "該新聞解析企業自願減量專案的申請與實務，儘管專案參與屬自願性質，但其執行過程涉及法規要求的碳盤查、減量驗證及碳權管理，將推動企業對合規管理系統的需求。", "title": "從減碳到碳權：企業自願減量專案申請與實務解析 - seftb.org", "source": "seftb.org", "date": "Thu, 06 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBRdEtxd2Vid3ZvandydWNQWjZiWE9WamlJbUUxT09UMVN4X1RDZGxEdjA2SURTaW5uNG9IMGpLcHN3alZGVzQ3MHN4ZnFTLS12cEtFa2NxSmw?oc=5"}]}, {"query": "CBAM 碳關稅 台灣", "items": [{"regulation": "CBAM (Carbon Border Adjustment Mechanism)", "effective": "", "scope": "鋼鐵出口業者 (出口至歐盟之鋼鐵相關產品業者)", "reason": "CBAM是一項具體法規，要求特定產業出口商申報碳排放並可能面臨碳成本，需導入碳盤查與合規管理系統以應對。", "title": "CBAM對台灣的影響：鋼鐵出口面臨碳成本 減碳速度成競爭力核心 - 倡議家", "source": "倡議家", "date": "Mon, 17 Aug 2026 07:19:42 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5DTW1uVFRpZk0zU1lvcGw0SC1NcFpNcFdOWWhjNkRXeUpyRDhBamE3bktwVFM5a3JNTmMtaV80bE9vZVVXWklpWmZWU0MtX0dHYzRibXBueDJFWDB2Z1Zj0gFkQVVfeXFMT2JpNUYyLVRKLWdNd1lnVVY4RUU1dWRlMVowOEFleGdZU1U4RmNxdDdKQi03YkRIbWdBcWc0QUkzZGRmWnFMTTdCMEp5MHBOTi1OVzUwYnQ2RVhjdXM0MXYxZEhUeg?oc=5"}, {"regulation": "歐盟CBAM (碳邊境調整機制)", "effective": "2027年起買憑證繳碳關稅", "scope": "台灣鋼鐵業者 (欲維持歐洲市場競爭力者)", "reason": "新聞明確指出歐盟CBAM這項具體法規，並提及2027年起購買憑證繳納碳關稅的義務，影響銷往歐洲的特定產業。", "title": "歐盟CBAM正式上路，2027年就要買憑證繳碳關稅，台灣鋼鐵業者如何維持歐洲市場競爭力？ - 今周刊", "source": "今周刊", "date": "Fri, 27 Mar 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5sa1ZtZzJhNTNfSlp3QkJjVjNUbW1sV2pVREpCaWdfRHM0OGRKcHc1dVI3TC1UWjFmR0hZZ0cwZzVEcXZSaDFuemdBSG54M0M3YVZydlI3WmVNSE5IN2NxY0F6ZjdKQU96cF9qSHVCLXlQM0tBWDdxcjRsMzlFOTg?oc=5"}, {"regulation": "CBAM", "effective": "2026年", "scope": "", "reason": "CBAM將於2026年正式實施，企業需準備碳排放數據追蹤與申報機制，以符合法規要求。", "title": "2026年CBAM正式實施：執行法案重點整理及實務細節分析 - CSRone 永續智庫", "source": "CSRone 永續智庫", "date": "Tue, 07 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiREFVX3lxTFBQaXg3QUx0a0NvOHpOOTJycW1GT19iSDJkTlJOTXYtQjM4UE5IaG5zcldIcHhxQS1qRnVkOE5FanM0MDJH?oc=5"}, {"regulation": "歐盟 CBAM (碳邊境調整機制)", "effective": "", "scope": "向歐盟出口特定高碳排產品的台灣企業", "reason": "歐盟CBAM要求企業追蹤和申報產品的碳排放量，這將推動企業導入碳盤查、數據整合與合規申報系統。", "title": "歐盟 CBAM 對台灣企業的影響 - DHL", "source": "DHL", "date": "Sun, 14 Dec 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQSDF3dVdLdDBNRUQxSEJlT24zV0Vwbm53VG04MXNVTmZUdDk1d0RpR1duUjdtUExidGFRY2hQWlBlaHNwX2t6TWtsQUJSUC1adHpKNEJiOWRxNUpydy03SF8tVkc3OGlQaEtoVkFsbHhUZXdDU0QtQjFNZzhlSjBtWkxSMjJHdmNJd1NRQzg2SndLY3ZYbXVOVnQtZUc1LTQtWWppZ3pBblpoSGVCWTRIc0xBcnY?oc=5"}, {"regulation": "歐盟碳邊境調整機制 (CBAM)", "effective": "已上路，過渡期申報於2023年10月1日啟動", "scope": "對歐盟出口受CBAM規範產品之台灣企業", "reason": "新聞明確指出歐盟碳邊境調整機制(CBAM)已上路，衝擊台灣出口企業，需進行碳盤查及減碳以符合法規申報要求。", "title": "碳關稅衝擊浮現／歐盟碳稅上路 「台灣真正挑戰 是減碳速度」 - UDN", "source": "UDN", "date": "Mon, 20 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFB6MWFkQXRodEZweHFyYll3WldlcVE2NnBxTW5WVzVQVzRhYkY4bElaaDkwMnktc0E2clFuSEV0eWNfajJyZ1pac0JhbTJnRDZsU3ow0gFYQVVfeXFMTm5XaDBhMmN3Slg2S05QTFdYMUpkcndWZlJMdi1YcGY0WnpOblVENnByc3NfekF1d0IzNkM0ZEtVSUMzNXJiMDNVcm52UTR2LXphV3VpTFRTWQ?oc=5"}, {"regulation": "歐盟碳邊境調整機制 (CBAM)", "effective": "正式收費 (暗示進入實質影響階段)", "scope": "與歐盟有貿易往來且涉及特定碳密集型產品（如鋼鐵、鋁、水泥、化肥、電力、氫氣等）的製造商、出口商及歐盟進口商。", "reason": "歐盟CBAM機制正式進入收費階段，要求相關企業精確盤查、申報產品碳排放量，並可能支付碳邊境稅，企業需導入系統以管理碳數據、計算成本與合規申報。", "title": "歐盟碳邊境調整機制CBAM正式收費，「碳洩漏」是什麼？相關名詞、QA一覽 - TNL The News Lens 關鍵評論網", "source": "TNL The News Lens 關鍵評論網", "date": "Fri, 02 Jan 2026 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE9lY29yRnpLWmdPRWxTWV9fdUprZmZyZHJCUmVRWTRKYmFReS0tVG4zb0tFU3YwVV9mQjFlTkhtbkRMMy0xd1NEUHZIR0hPRm1XcDJJcA?oc=5"}, {"regulation": "歐盟 CBAM (碳邊境調整機制)", "effective": "", "scope": "涉及出口產品至歐盟的製造商與貿易商", "reason": "新聞明確指出歐盟CBAM這項具體法規，涉及碳稅與綠色貿易，可能促使企業導入碳盤查、申報與合規管理系統。", "title": "當洗衣機也要交「碳稅」？拆解歐盟 CBAM 擴大衝擊，看懂綠色貿易新局 - CSRone 永續智庫", "source": "CSRone 永續智庫", "date": "Fri, 26 Dec 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiREFVX3lxTE5YTWsyWVU1TGhjZng1d0c1SW9wSkdXRnlfQzZYU3h5LVEtMUQxQ3NrSzZ5YS1wZ3lxM0lGN3hQVHRHcW11?oc=5"}, {"regulation": "歐盟碳邊境調整機制 (CBAM)", "effective": "", "scope": "台灣出口產業", "reason": "新聞明確提及歐盟碳邊境調整機制(CBAM)這項具體的法規，對台灣出口產業造成壓力。", "title": "歐盟碳關稅不退讓 再生能源與SRF成關鍵 台灣出口產業如何突圍CBAM壓力 - 蕃新聞", "source": "蕃新聞", "date": "Fri, 10 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFBiM2NiSG5JTjRsa3hXSk1yVk1KSnFMTFpMdlkycjg0RWhHak9yTEs0amJGcWJMNlphc1M3ekZEd2dVcnVibUw3TjBiRVRla0JLRVE?oc=5"}]}, {"query": "個資法 裁罰", "items": [{"regulation": "個人資料保護法", "effective": "", "scope": "所有收集、處理、利用個人資料的機關、團體、法人、企業及自然人", "reason": "此新聞顯示企業因違反個人資料保護法而受罰，凸顯企業需強化個資管理與保護機制，可能導入或升級相關合規管理系統或ERP模組以符合法規要求。", "title": "首例！校園徵才意外洩個資　安永聯合會計師事務所挨罰5萬 - ETtoday財經雲", "source": "ETtoday財經雲", "date": "Tue, 16 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFB3NHFkZVVtZDdyZW9Mb3RJS1Z3NnpkbDItVmp0Z3VMMkhCTnBGckk5VnBEYU14eHptRWhhWTVhQVdHUXZzQjl4eWhfUC05emZLS0HSAVBBVV95cUxPMFI2S3BqY2FxbHNJa2NVOG9lUzBwcmZHbGxrWUhhMWM4TjhaNWM1SHB0RUE4bzB1WjNuQnNQMTM0M25UYzBuUEh1SjdSaWNDYg?oc=5"}, {"regulation": "個資保護新制", "effective": "", "scope": "管理顧問業者", "reason": "標題明確指出「個資保護新制」，為具體法規要求，暗示業者需因應且可能涉及系統導入/升級。", "title": "經濟部舉辦說明會 協助管理顧問業者因應個資保護新制 - moea.gov.tw", "source": "moea.gov.tw", "date": "Thu, 28 May 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxORGhxU1VpZ3R4QmRtRTBHN3pxY0lTWmhqZnU4TFBvQzNVbzhIaWF4aU9Oai1EQU5UaTRMWTVwNnNHYndBekhOZ0lJX1ZhWlk4TUNUODgzcGN3TDJuRmRWVFgtUnVVTkN1aEs5MnlPTFh4YnVWUjNXUjNQRFc2YU5OaHNnYjROc2Y4MUpYeg?oc=5"}, {"regulation": "個人資料保護法", "effective": "", "scope": "所有蒐集、處理、利用個人資料的機關或非公務機關（含企業）", "reason": "新聞提及個資外洩導致裁罰，明確指出企業在個資保護法規下的合規風險與責任，可能需強化資安及個資管理系統。", "title": "五福旅行社遭駭「20萬筆個資外洩」！裁罰結果出爐 業者回應了 - Yahoo新聞", "source": "Yahoo新聞", "date": "Mon, 13 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMi-gJBVV95cUxPV1FKVllqVkQ3Njc5VXdsenNoMlg0RW9CU2VZblZsdkdxeEY1cHgxR1JmSjFpQ2lScjlHanNMbzRzM0tPMlBjTzhZOWJaZVFJOGxLdFdLaGFzZGFaNWlGbnFYaVJtbnlJVHZseXRYWVVCNlRHWmdFUEhGRFBsXzNSejFTWGdWUVZEMU0tNmZzZG1LM3ZRd3Q3NkxsTG54NHg0ZklnbHluYnFQWkIxSE84NU5SbG9MN3AtSGhFbUVNTWZIUDFyTVcxZjVUdDFLeHo0ZXhGUXFGV1RNLV9LZEdjWGszQmMzbzAxZjJFcE9SajJpZW9hTUdacU1XYkxqbjVUb0lMWVRrbUhDcUhYYXpKcDZ1ZEJRa3AyeFN5amhObXRiSE1WcnN6ZEE2LVFEeTBOSjJRTFJKRGhvVWRqZnFYSWJkWHZjMktiNFpDay1NSWduSmhORmhrNXUxeE53alRaWjQ5TFRCWEpJS1pUdGhPNmJnNVlwbW5JVXc?oc=5"}, {"regulation": "個人資料保護法規 / 數據隱私法規", "effective": "", "scope": "所有處理大量用戶個人資料的企業，特別是電商、科技及服務業等", "reason": "此新聞報導企業因個資外洩遭處巨額罰款，直接反映出個人資料保護法規的嚴格執行與合規的重要性，對相關企業導入或升級數據隱私及合規管理系統產生商機。", "title": "史上最重！酷澎害3750萬用戶個資外洩　遭開罰140億元創紀錄 | 國際 | CTWANT - CTWANT", "source": "CTWANT", "date": "Thu, 11 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1rMU95NVVIVm1Jb3h3TVh6bG9GZ0xoUks3Mmt2WUk2ZUo2aHR4YldUMUF2WW9BVl92UmxqbDFwOUVJbnBpdXRJek9kYVhPbW_SAVRBVV95cUxObmRkZk1Ub3V0VHEyWjlwc2pFdEZZOE9UZzgycF96V0FGNGtUcXFGVFNLOUV6ZGRWQzBzeFZYbXBac3U2aFFuSjFuQnpQM2RsaWlEajg?oc=5"}, {"regulation": "個人資料保護法", "effective": "", "scope": "所有處理個人資料的企業，特別是大型電商及線上服務提供者", "reason": "個人資料洩漏導致巨額罰款，凸顯企業需強化個資保護與合規管理系統以避免觸法風險。", "title": "韓國電商龍頭酷澎洩漏3千萬用戶個資 遭重罰135億台幣創紀錄 | 民視新聞網 - LINE TODAY", "source": "LINE TODAY", "date": "Wed, 10 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9PRm1SR2YyR1NHeFhBclVMdk94aTAzUzFYNklWM0R1cmhoX01VeXFaQXpqa3V3M29ET3g4Y29EZjFaMEhSS2ttYnJaLXd4YmxVdGl5X0Nn?oc=5"}, {"regulation": "個人資料保護法", "effective": "", "scope": "所有處理個人資料的企業及機關單位", "reason": "五福旅遊因個資外洩遭觀光署開罰，顯示企業需符合個人資料保護法規定的資安與合規管理要求，導入相關系統強化個資保護。", "title": "五福旅遊20萬筆個資外洩 遭觀光署開罰百萬 - 卡優新聞網", "source": "卡優新聞網", "date": "Tue, 14 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1NRmI0aVE2XzdfUWFrWkJCWlNLOE1KanU4eEdRUmVGd1A2SjRYajZKV0xIZ1Q4cTNoNzlaQ0hMT2hRWFFMZVNzWUhRcmFENmVHTXBIdVcwYzU4Zw?oc=5"}, {"regulation": "個人資料保護法規", "effective": "", "scope": "科技業、電商平台等處理大量個人資料的企業", "reason": "此新聞報導南韓對Coupang開出史上最大個資罰單，顯示企業若未能有效遵循個資法規將面臨巨額罰款，促使企業需導入或升級相關系統以強化個資合規管理。", "title": "Coupang挨罰6246億韓元 南韓史上最大個資裁罰震撼科技業 - 蕃新聞", "source": "蕃新聞", "date": "Fri, 12 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1UZ285My1aSzQwMXkzRlRzRG9nZ1doT0pyb1VpRGY3bk80a3FzUnE0cTlWaWNoWXhMWUpPOG4tbzc5MEFzRTZ3N3JCZExJa05aaUE?oc=5"}]}, {"query": "產品碳足跡 揭露", "items": [{"regulation": "氣候變遷因應法及其相關碳盤查與揭露要求", "effective": "", "scope": "產品製造商，特別是食品/農業加工業（如茶葉生產業者），需進行產品碳足跡盤查與揭露。", "reason": "新聞提及產品碳足跡揭露與取得碳標籤，反映了企業因應氣候變遷法規要求及供應鏈壓力，需導入系統進行碳數據管理與揭露。", "title": "茶改場輔導低碳生產、碳足跡揭露 「茶毅思」、「日月老茶廠」產品取得碳標籤 - 農傳媒", "source": "農傳媒", "date": "Fri, 12 Jun 2026 04:31:05 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFBDX3RhN0lzbFc0b0xMMGhJQko4NXN5Zm1nQV9tZ2lQMktSNlJPb284VlFkQlhUV2ZBbDNrVU03cHRwU1hoNEc0RXFQZ3NQY0FUNDF3VnBn?oc=5"}, {"regulation": "產品碳足跡查證/揭露要求", "effective": "", "scope": "企業", "reason": "環境部設立產品碳足跡查驗機構資格，預示企業將面臨產品碳足跡的申報或查證要求，可能需要系統支援數據追蹤與管理。", "title": "PwC取得環境部產品碳足跡合格查驗機構資格 協助企業加速低碳轉型 - cna.com.tw", "source": "cna.com.tw", "date": "Tue, 04 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE02UVZraGg1N1E1a1ZjbGZVNHN2UEdJZEFFc0dhYnlSclB0TEQxLXFkOHkya0dYZWFWcGU2REJ3b3ZsQWx1VFhSai1yQUhjYXc5ajFhaVhmeGFkdw?oc=5"}, {"regulation": "產品碳足跡查驗/申報制度", "effective": "", "scope": "各行各業生產製造產品之企業，特別是供應鏈上下游、上市櫃公司及出口導向企業", "reason": "企業為符合產品碳足跡查驗要求，需系統性收集、計算並管理產品生命週期碳排放數據，帶動ERP或合規管理系統升級需求。", "title": "會計業搶食碳商機！PwC資誠普華綠色科技獲產品碳足跡查驗資格 - news.cnyes.com", "source": "news.cnyes.com", "date": "Tue, 04 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE0wclhiNG92Z3YzRTVZQXpsbGNHYWhhaFVheC1oUHpvNVdkSVZLOEZ1SEZjUzZaeUFDSncxOERwdVYzS0NNOHVVaU9UelFIeFE?oc=5"}, {"regulation": "產品碳足跡與碳標籤制度", "effective": "", "scope": "農產品業者", "reason": "碳標籤制度雖為自願性，但其要求業者進行產品碳足跡計算與揭露，此過程涉及大量數據管理與流程符合性，是未來碳排法規的基礎，創造系統導入需求。", "title": "中衛中心協助業者打造碳標籤農產品開拓永續新商機- 商情 - 工商時報", "source": "工商時報", "date": "Thu, 26 Feb 2026 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFBHZzRxcWsxMDdYdmFiU1kxcVR4Wjhpd3NSc3pQdll5ZXo0dV9ySk9Ba0EwSEdvQ2tkRXAyT3ZhbUZrdjA1b0xZcHNPbk44S081VjdCMzlqRndJZmRicnY4?oc=5"}, {"regulation": "產品碳足跡盤查與揭露要求", "effective": "", "scope": "所有具產品製造或供應鏈的企業，特別是出口導向或需符合供應鏈永續要求的製造業", "reason": "因應全球淨零碳排趨勢，法規與供應鏈要求企業進行產品碳足跡盤查與揭露。", "title": "產品碳足跡接軌淨零 宏于電機強化智慧能源布局 | ESG | 商情 - 經濟日報", "source": "經濟日報", "date": "Mon, 01 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE55a0Ryd0Q1NGFHbTRJRzVwT1FxRUlfald5bDZqWnZwRDlqZjc3WnA1UV9xNnREei05ek1uQ2x4emdDU0pyRGtUeHRWZUE4c1NDVDljMVpDYXk3UQ?oc=5"}, {"regulation": "產品碳足跡標示制度（包含碳標籤與減量標籤）", "effective": "", "scope": "生產製造商品之企業、或受供應鏈要求需進行產品碳足跡揭露之企業", "reason": "新聞提及產品碳足跡揭露及碳標籤、減量標籤，企業需系統性盤查、計算並揭露產品碳足跡，涉及資料收集與管理。", "title": "產品碳足跡大揭露:「碳標籤」與「減量標籤」 - 澎湖日報", "source": "澎湖日報", "date": "Tue, 02 Dec 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9mYUVOTmtEbWw3R01ldXEwTVZxZzQyNngxQm1KbnhFR0NUUU5uU1FxeWx0bG5UaFpxbWVPVG12eHFBaVA3R3U3cmhNdDBheDV1eEFnSGdEZDhzZk03bjdwUkxLX0hZemF3WnpR?oc=5"}]}], "total_topics": 9, "total_items": 63};
+  document.getElementById('genDate').textContent = data.generated;
+
+  var statsEl = document.getElementById('stats');
+  statsEl.innerHTML = [
+    { n: data.total_topics, l: '查詢的法規主題' },
+    { n: data.total_items, l: '確認為法規新聞則數' },
+  ].map(function(s){
+    return '<div class="stat"><div class="n">' + s.n + '</div><div class="l">' + s.l + '</div></div>';
+  }).join('');
+
+  var board = document.getElementById('board');
+  var emptyMsg = document.getElementById('emptyMsg');
+
+  function fmtDate(s){
+    if(!s) return '';
+    var d = new Date(s);
+    if(isNaN(d)) return s;
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function highlight(text, q){
+    if(!q) return escapeHtml(text);
+    var esc = escapeHtml(text);
+    var idx = esc.toLowerCase().indexOf(q.toLowerCase());
+    if(idx === -1) return esc;
+    return esc.slice(0,idx) + '<span class="match">' + esc.slice(idx, idx+q.length) + '</span>' + esc.slice(idx+q.length);
+  }
+
+  function dateInRange(dateStr, from, to){
+    if(!from && !to) return true;
+    var d = new Date(dateStr);
+    if(isNaN(d)) return true;
+    if(from && d < new Date(from)) return false;
+    if(to && d > new Date(to + 'T23:59:59')) return false;
+    return true;
+  }
+
+  function itemHtml(it, q){
+    return '' +
+      '<div class="item">' +
+        '<div class="item-top">' +
+          (it.effective ? '<span class="pill">' + escapeHtml(it.effective) + '</span>' : '') +
+          (it.scope ? '<span class="pill scope">' + escapeHtml(it.scope) + '</span>' : '') +
+        '</div>' +
+        '<a class="title" href="' + escapeHtml(it.link || '#') + '" target="_blank" rel="noopener noreferrer">' + highlight(it.title, q) + '</a>' +
+        '<div class="meta">資料來源：' + escapeHtml(it.source || '') + (it.date ? ' &middot; ' + fmtDate(it.date) : '') + '</div>' +
+        (it.reason ? '<div class="reason">' + escapeHtml(it.reason) + '</div>' : '') +
+      '</div>';
+  }
+
+  function cardHtml(regName, items, q){
+    return '' +
+      '<div class="card open">' +
+        '<div class="card-head">' +
+          '<span class="caret">&#9656;</span>' +
+          '<span class="card-name">' + highlight(regName, q) + '</span>' +
+          '<div class="badges"><span class="badge">相關新聞 ' + items.length + '</span></div>' +
+        '</div>' +
+        '<div class="items">' + items.map(function(it){ return itemHtml(it, q); }).join('') + '</div>' +
+      '</div>';
+  }
+
+  function render(){
+    var q = document.getElementById('searchInput').value.trim();
+    var ql = q.toLowerCase();
+    var dFrom = document.getElementById('dateFrom').value;
+    var dTo = document.getElementById('dateTo').value;
+
+    var topics = data.topics.map(function(t){
+      var items = t.items.filter(function(it){
+        if(!dateInRange(it.date, dFrom, dTo)) return false;
+        if(!ql) return true;
+        return ((it.regulation || '') + it.title + t.query).toLowerCase().indexOf(ql) !== -1;
+      });
+      return { query: t.query, items: items };
+    }).filter(function(t){ return t.items.length; });
+
+    board.innerHTML = topics.map(function(t){
+      return cardHtml(t.query, t.items, q);
+    }).join('');
+
+    emptyMsg.style.display = topics.length ? 'none' : 'block';
+
+    Array.prototype.forEach.call(board.querySelectorAll('.card-head'), function(head){
+      head.addEventListener('click', function(){
+        head.parentElement.classList.toggle('open');
+      });
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', render);
+  document.getElementById('dateFrom').addEventListener('change', render);
+  document.getElementById('dateTo').addEventListener('change', render);
+  document.getElementById('dateClear').addEventListener('click', function(){
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    render();
+  });
+  render();
+})();
+</script>
