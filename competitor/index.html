@@ -190,7 +190,11 @@
   .item .meta{
     font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint);
   }
-  .item .reason{ font-size:12.5px; color:var(--ink-dim); margin-top:1px; }
+  .item{ cursor:pointer; }
+  .item .reason{ font-size:12.5px; color:var(--ink-dim); margin-top:1px; display:none; }
+  .item.show-reason .reason{ display:block; }
+  .item .reason-hint{ font-size:11px; color:var(--ink-faint); font-family:var(--font-mono); margin-top:1px; }
+  .item.show-reason .reason-hint{ display:none; }
 
   .empty{ text-align:center; padding:60px 20px; color:var(--ink-faint); font-size:14px; }
 
@@ -275,6 +279,12 @@
   var board = document.getElementById('board');
   var emptyMsg = document.getElementById('emptyMsg');
 
+  board.addEventListener('click', function(e){
+    if(e.target.closest('a.title')) return;
+    var item = e.target.closest('.item');
+    if(item) item.classList.toggle('show-reason');
+  });
+
   function fmtDate(s){
     if(!s) return '';
     var d = new Date(s);
@@ -312,7 +322,7 @@
           '<a class="title" href="' + escapeHtml(it.link || '#') + '" target="_blank" rel="noopener noreferrer">' + highlight(it.title, q) + '</a>' +
         '</div>' +
         '<div class="meta">' + escapeHtml(it.source || '') + (it.date ? ' &middot; ' + fmtDate(it.date) : '') + '</div>' +
-        (it.reason ? '<div class="reason">' + escapeHtml(it.reason) + '</div>' : '') +
+        (it.reason ? '<div class="reason-hint">展開判斷理由…</div><div class="reason">' + escapeHtml(it.reason) + '</div>' : '') +
       '</div>';
   }
 
