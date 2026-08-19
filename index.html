@@ -110,8 +110,8 @@ tr:hover td{background:#fafbff}
 .site-nav a{color:#777;text-decoration:none;padding:6px 12px;border-radius:8px;transition:.15s}
 .site-nav a:hover{background:#f0f2f8;color:#333}
 .site-nav a.active{background:#e8eaff;color:#5c6bc0;font-weight:600}
-.site-nav .nav-sep{flex:1}
-.site-nav a.nav-home{color:#aaa}
+.corner-link{position:fixed;top:14px;right:16px;z-index:60;font-size:.78rem;font-weight:600;color:#777;text-decoration:none;padding:6px 13px;border-radius:99px;background:#fff;border:1px solid #e0e0e0;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:.15s}
+.corner-link:hover{color:#5c6bc0;border-color:#5c6bc0}
 /* Mobile */
 @media(max-width:680px){
   h1{font-size:1.1rem}
@@ -128,9 +128,8 @@ tr:hover td{background:#fafbff}
   <a href="./" class="active">📈 總體商業環境</a>
   <a href="competitor/">🏢 競品情報看板</a>
   <a href="regulation/">📜 法規商機看板</a>
-  <span class="nav-sep"></span>
-  <a href="https://resatseng.github.io/" class="nav-home" target="_blank" rel="noopener">🔗 所有專案</a>
 </nav>
+<a href="https://resatseng.github.io/" class="corner-link" target="_blank" rel="noopener">🔗 所有專案</a>
 <div class="wrap">
   <h1>📊 Google Trends — 總體商業環境關鍵字</h1>
   <p class="sub">白名單制：僅保留與商業環境相關的關鍵字</p>
