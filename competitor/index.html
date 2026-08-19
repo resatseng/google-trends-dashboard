@@ -370,8 +370,9 @@
       '</div>';
   }
 
-  function cardHtml(c, itemsInRange, q, open){
+  function cardHtml(c, itemsInRange, q, open, negOnly){
     var negCount = itemsInRange.filter(function(it){ return it.neg; }).length;
+    var displayItems = negOnly ? itemsInRange.filter(function(it){ return it.neg; }) : itemsInRange;
     return '' +
       '<div class="card' + (open ? ' open' : '') + '" data-neg="' + (negCount > 0 ? 1 : 0) + '" data-name="' + escapeHtml(c.name) + '">' +
         '<div class="card-head">' +
@@ -383,7 +384,7 @@
             '<span class="badge">相關新聞 ' + itemsInRange.length + '</span>' +
           '</div>' +
         '</div>' +
-        '<div class="items">' + itemsInRange.map(function(it){ return itemHtml(it, q); }).join('') + '</div>' +
+        '<div class="items">' + displayItems.map(function(it){ return itemHtml(it, q); }).join('') + '</div>' +
       '</div>';
   }
 
@@ -392,7 +393,7 @@
     var d = new Date(dateStr);
     if(isNaN(d)) return true;
     if(from && d < new Date(from)) return false;
-    if(to && d > new Date(to + 'T23:59:59')) return false;
+    if(to && d > new Date(to + 'T23:59:59Z')) return false;
     return true;
   }
 
@@ -506,8 +507,8 @@
       html += '<div class="section-title">' + escapeHtml(grp) + '<span class="count">(' + inGrp.length + ')</span></div>';
       html += inGrp.map(function(x){
         var negCount = x.items.filter(function(it){ return it.neg; }).length;
-        var open = expandAll || (!!ql && x.items.some(function(it){ return (it.title || '').toLowerCase().indexOf(ql) !== -1; }));
-        return cardHtml(x.c, x.items, q, open);
+        var open = expandAll || (!!ql && x.items.some(function(it){ return (it.title || '').toLowerCase().indexOf(ql) !== -1; })) || (negOnly && negCount > 0);
+        return cardHtml(x.c, x.items, q, open, negOnly);
       }).join('');
     });
     board.innerHTML = html;
