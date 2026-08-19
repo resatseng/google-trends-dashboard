@@ -121,6 +121,22 @@
     0%{ box-shadow:0 0 0 3px var(--accent); }
     100%{ box-shadow:var(--shadow); }
   }
+
+  .week-section{
+    border:1px solid var(--accent); border-radius:10px; background:var(--accent-soft);
+    padding:16px 18px; margin-bottom:24px;
+  }
+  .week-title{
+    font-family:var(--font-mono); font-size:13px; font-weight:700; letter-spacing:.06em;
+    color:var(--accent); margin-bottom:10px; display:flex; align-items:baseline; gap:8px;
+  }
+  .week-title .count{ font-family:var(--font-mono); font-weight:400; color:var(--ink-dim); }
+  .week-item-topic{
+    font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  #weekBoard .item{ background:var(--surface); border-radius:8px; margin-bottom:6px; border-bottom:none; padding:10px 14px; }
+  #weekBoard .item:last-child{ margin-bottom:0; }
   .toggle{
     display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--ink-dim);
     cursor:pointer; user-select:none; white-space:nowrap;
@@ -248,6 +264,11 @@
     <button class="clear" id="expandToggle" type="button">全部展開</button>
   </div>
 
+  <section class="week-section" id="weekSection" style="display:none;">
+    <div class="week-title">本週新聞<span class="count" id="weekCount"></span></div>
+    <div id="weekBoard"></div>
+  </section>
+
   <div class="board" id="board"></div>
   <p class="empty" id="emptyMsg" style="display:none;">沒有符合條件的結果</p>
 
@@ -279,11 +300,13 @@
   var board = document.getElementById('board');
   var emptyMsg = document.getElementById('emptyMsg');
 
-  board.addEventListener('click', function(e){
+  function toggleReasonOnClick(e){
     if(e.target.closest('a.title')) return;
     var item = e.target.closest('.item');
     if(item) item.classList.toggle('show-reason');
-  });
+  }
+  board.addEventListener('click', toggleReasonOnClick);
+  document.getElementById('weekBoard').addEventListener('click', toggleReasonOnClick);
 
   function fmtDate(s){
     if(!s) return '';
@@ -306,7 +329,7 @@
     return esc.slice(0,idx) + '<span class="match">' + esc.slice(idx, idx+q.length) + '</span>' + esc.slice(idx+q.length);
   }
 
-  function itemHtml(it, q){
+  function itemHtml(it, q, topicLabel){
     var pillClass, pillText;
     if(it.sentiment){
       pillClass = it.sentiment === 'negative' ? 'neg' : (it.sentiment === 'positive' ? 'safe' : 'unrelated');
@@ -317,6 +340,7 @@
     }
     return '' +
       '<div class="item' + (it.about ? '' : ' dim') + '">' +
+        (topicLabel ? '<div class="week-item-topic">' + escapeHtml(topicLabel) + '</div>' : '') +
         '<div class="item-top">' +
           '<span class="pill ' + pillClass + '">' + pillText + '</span>' +
           '<a class="title" href="' + escapeHtml(it.link || '#') + '" target="_blank" rel="noopener noreferrer">' + highlight(it.title, q) + '</a>' +
@@ -351,6 +375,30 @@
     if(to && d > new Date(to + 'T23:59:59')) return false;
     return true;
   }
+
+  (function renderThisWeek(){
+    var ref = new Date(data.generated);
+    if(isNaN(ref)) ref = new Date();
+    var cutoff = new Date(ref.getTime() - 7 * 24 * 60 * 60 * 1000);
+    var weekItems = [];
+    data.competitors.forEach(function(c){
+      c.items.forEach(function(it){
+        var d = new Date(it.date);
+        if(!isNaN(d) && d >= cutoff){
+          weekItems.push({ it: it, topic: c.name, d: d });
+        }
+      });
+    });
+    weekItems.sort(function(a, b){ return b.d - a.d; });
+
+    var section = document.getElementById('weekSection');
+    if(!weekItems.length){ section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    document.getElementById('weekCount').textContent = '(' + weekItems.length + ')';
+    document.getElementById('weekBoard').innerHTML = weekItems.map(function(w){
+      return itemHtml(w.it, '', w.topic);
+    }).join('');
+  })();
 
   var competitorSelect = document.getElementById('competitorSelect');
   competitorSelect.innerHTML = '<option value="">所有競爭者</option>' +
