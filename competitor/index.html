@@ -73,6 +73,7 @@
     margin:0 0 8px; text-wrap:balance; letter-spacing:.01em;
   }
   .sub{ color:var(--ink-dim); font-size:15px; margin:0; max-width:100%; }
+  .sub code{ font-family:var(--font-mono); background:var(--surface-2); padding:1px 5px; border-radius:4px; }
 
   .stats{
     display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
@@ -284,7 +285,7 @@
   <header class="top">
     <p class="eyebrow">Competitive Intelligence &middot; 業務情報</p>
     <h1>競品情報看板</h1>
-    <p class="sub">從 Google News 撈取競爭者相關新聞，經 Gemini 逐則判斷是否真的相關、是否為負面事件，依競爭者分區呈現。資料日期 <span id="genDate"></span>。<br/>監控範圍：取業務日報裡最常被客戶提到的競爭對手，前 30 家且提及次數 ≥ 3 次者納入監控。</p>
+    <p class="sub">來源：Google News RSS（查詢詞＝競爭者簡稱＋「當機/裁罰/違約/倒閉/停業/求償/資安/客訴」），逐則由 <code>gemini-2.5-flash</code> 判斷「是否真的與該競爭者相關」與「是否為負面事件」，避免短公司名（如「正航」「凌越」）誤命中無關新聞。競爭者清單來自業務日報 L5_competitors 欄位萃取，並依客戶備註關鍵字（ERP/BPM/MES/SI）分類為「ERP専屬」與「ERP同類」。資料日期 <span id="genDate"></span>。<br/>監控範圍：取業務日報裡最常被客戶提到的競爭對手，前 30 家且提及次數 ≥ 3 次者納入監控。</p>
     <div class="stats" id="stats"></div>
   </header>
 
@@ -320,8 +321,8 @@
   <p class="empty" id="emptyMsg" style="display:none;">沒有符合條件的結果</p>
 
   <footer>
-    來源：Google News RSS（查詢詞＝競爭者簡稱＋「當機/裁罰/違約/倒閉/停業/求償/資安/客訴」），逐則由 <code>gemini-2.5-flash</code> 判斷「是否真的與該競爭者相關」與「是否為負面事件」，避免短公司名（如「正航」「凌越」）誤命中無關新聞。競爭者清單來自業務日報 L5_competitors 欄位萃取，並依客戶備註關鍵字（ERP/BPM/MES/SI）分類為「ERP専屬」與「ERP同類」。此看板僅供內部業務參考，負面事件仍建議人工複核連結後之原文再行判斷。<br/>
     已排除非ERP情報範疇的名稱：<span id="excludedList"></span>（電信/資安服務、虛擬化基礎設施、顧問輔導、物流硬體等與ERP競爭無關）。<br/>
+    此看板僅供內部業務參考，負面事件仍建議人工複核連結後之原文再行判斷。<br/>
     「本公司」區塊為鼎新數智(Digiwin)自身相關新聞，不限負面事件，逐則標示正面／負面／中性，供業務同步掌握公司公關動態與潛在風險。
   </footer>
 </div>
