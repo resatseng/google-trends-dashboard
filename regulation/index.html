@@ -105,6 +105,20 @@
   }
   .daterange .clear:hover{ color:var(--ink); border-color:var(--ink-faint); }
 
+  .index{ display:flex; flex-wrap:wrap; gap:6px; margin-top:20px; }
+  .index-chip{
+    font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
+    border:1px solid var(--border); background:var(--surface); color:var(--ink-dim);
+    cursor:pointer; white-space:nowrap;
+  }
+  .index-chip:hover{ border-color:var(--accent); color:var(--accent); }
+  .index-chip.discovered{ border-color:var(--safe); color:var(--safe); }
+  .card.flash{ animation: flash-highlight 1.6s ease; }
+  @keyframes flash-highlight{
+    0%{ box-shadow:0 0 0 3px var(--accent); }
+    100%{ box-shadow:var(--shadow); }
+  }
+
   .board{ display:flex; flex-direction:column; gap:10px; }
 
   .section-title{
@@ -179,6 +193,8 @@
     <div class="stats" id="stats"></div>
   </header>
 
+  <div class="index" id="topicIndex"></div>
+
   <div class="controls">
     <div class="search">
       <input type="text" id="searchInput" placeholder="搜尋法規主題或新聞標題…" />
@@ -190,6 +206,7 @@
       <input type="date" id="dateTo" />
       <button class="clear" id="dateClear" type="button">清除</button>
     </div>
+    <button class="clear" id="expandToggle" type="button">全部展開</button>
   </div>
 
   <div class="board" id="board"></div>
@@ -259,9 +276,9 @@
       '</div>';
   }
 
-  function cardHtml(regName, items, q){
+  function cardHtml(regName, items, q, open){
     return '' +
-      '<div class="card open">' +
+      '<div class="card' + (open ? ' open' : '') + '" data-name="' + escapeHtml(regName) + '">' +
         '<div class="card-head">' +
           '<span class="caret">&#9656;</span>' +
           '<span class="card-name">' + highlight(regName, q) + '</span>' +
@@ -270,6 +287,39 @@
         '<div class="items">' + items.map(function(it){ return itemHtml(it, q); }).join('') + '</div>' +
       '</div>';
   }
+
+  var topicIndexEl = document.getElementById('topicIndex');
+  topicIndexEl.innerHTML = data.topics.map(function(t){
+    return '<button type="button" class="index-chip' + (t.discovered ? ' discovered' : '') + '" data-jump="' + escapeHtml(t.query) + '">' +
+      escapeHtml(t.query.replace('🔍 自動偵測：', '🔍 ')) + '</button>';
+  }).join('');
+
+  topicIndexEl.addEventListener('click', function(e){
+    var btn = e.target.closest('.index-chip');
+    if(!btn) return;
+    var name = btn.getAttribute('data-jump');
+
+    document.getElementById('searchInput').value = '';
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    render();
+
+    var target = board.querySelector('.card[data-name="' + CSS.escape(name) + '"]');
+    if(target){
+      target.classList.add('open');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('flash');
+      setTimeout(function(){ target.classList.remove('flash'); }, 1600);
+    }
+  });
+
+  var expandAll = false;
+  var expandBtn = document.getElementById('expandToggle');
+  expandBtn.addEventListener('click', function(){
+    expandAll = !expandAll;
+    expandBtn.textContent = expandAll ? '全部收合' : '全部展開';
+    render();
+  });
 
   function render(){
     var q = document.getElementById('searchInput').value.trim();
@@ -287,7 +337,8 @@
     }).filter(function(t){ return t.items.length; });
 
     board.innerHTML = topics.map(function(t){
-      return cardHtml(t.query, t.items, q);
+      var open = expandAll || !!ql;
+      return cardHtml(t.query, t.items, q, open);
     }).join('');
 
     emptyMsg.style.display = topics.length ? 'none' : 'block';

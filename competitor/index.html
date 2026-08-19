@@ -236,6 +236,7 @@
       <input type="date" id="dateTo" />
       <button class="clear" id="dateClear" type="button">清除</button>
     </div>
+    <button class="clear" id="expandToggle" type="button">全部展開</button>
   </div>
 
   <div class="board" id="board"></div>
@@ -310,10 +311,10 @@
       '</div>';
   }
 
-  function cardHtml(c, itemsInRange, q){
+  function cardHtml(c, itemsInRange, q, open){
     var negCount = itemsInRange.filter(function(it){ return it.neg; }).length;
     return '' +
-      '<div class="card open" data-neg="' + (negCount > 0 ? 1 : 0) + '" data-name="' + escapeHtml(c.name) + '">' +
+      '<div class="card' + (open ? ' open' : '') + '" data-neg="' + (negCount > 0 ? 1 : 0) + '" data-name="' + escapeHtml(c.name) + '">' +
         '<div class="card-head">' +
           '<span class="caret">&#9656;</span>' +
           '<span class="card-name">' + highlight(c.name, q) + '</span>' +
@@ -360,10 +361,19 @@
 
     var target = board.querySelector('.card[data-name="' + CSS.escape(name) + '"]');
     if(target){
+      target.classList.add('open');
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       target.classList.add('flash');
       setTimeout(function(){ target.classList.remove('flash'); }, 1600);
     }
+  });
+
+  var expandAll = false;
+  var expandBtn = document.getElementById('expandToggle');
+  expandBtn.addEventListener('click', function(){
+    expandAll = !expandAll;
+    expandBtn.textContent = expandAll ? '全部收合' : '全部展開';
+    render();
   });
 
   function render(){
@@ -392,7 +402,11 @@
       var inGrp = filtered.filter(function(x){ return x.c.group === grp; });
       if(!inGrp.length) return;
       html += '<div class="section-title">' + escapeHtml(grp) + '<span class="count">(' + inGrp.length + ')</span></div>';
-      html += inGrp.map(function(x){ return cardHtml(x.c, x.items, q); }).join('');
+      html += inGrp.map(function(x){
+        var negCount = x.items.filter(function(it){ return it.neg; }).length;
+        var open = expandAll || negCount > 0 || (!!ql && x.items.some(function(it){ return (it.title || '').toLowerCase().indexOf(ql) !== -1; }));
+        return cardHtml(x.c, x.items, q, open);
+      }).join('');
     });
     board.innerHTML = html;
     emptyMsg.style.display = filtered.length ? 'none' : 'block';
