@@ -103,7 +103,12 @@
   }
   #competitorSelect:focus{ outline:2px solid var(--accent); outline-offset:1px; }
 
-  .index{ display:flex; flex-wrap:wrap; gap:6px; margin-top:20px; }
+  .index{ display:flex; flex-direction:column; gap:8px; margin-top:20px; }
+  .index-group{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .index-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-faint); margin-right:4px; flex:none;
+  }
   .index-chip{
     font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
     border:1px solid var(--border); background:var(--surface); color:var(--ink-dim);
@@ -341,11 +346,19 @@
   competitorSelect.innerHTML = '<option value="">所有競爭者</option>' +
     data.competitors.map(function(c){ return '<option value="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '</option>'; }).join('');
 
-  var indexEl = document.getElementById('competitorIndex');
-  indexEl.innerHTML = data.competitors.map(function(c){
+  function chipHtml(c){
     return '<button type="button" class="index-chip' + (c.negative > 0 ? ' neg' : '') + '" data-jump="' + escapeHtml(c.name) + '">' +
       escapeHtml(c.name) + (c.negative > 0 ? ' (' + c.negative + ')' : '') + '</button>';
-  }).join('');
+  }
+
+  var indexEl = document.getElementById('competitorIndex');
+  var indexHtml = '';
+  data.group_order.forEach(function(grp){
+    var inGrp = data.competitors.filter(function(c){ return c.group === grp; });
+    if(!inGrp.length) return;
+    indexHtml += '<div class="index-group"><span class="index-label">' + escapeHtml(grp) + '</span>' + inGrp.map(chipHtml).join('') + '</div>';
+  });
+  indexEl.innerHTML = indexHtml;
 
   indexEl.addEventListener('click', function(e){
     var btn = e.target.closest('.index-chip');
