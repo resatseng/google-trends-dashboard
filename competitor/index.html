@@ -103,12 +103,13 @@
   }
   #competitorSelect:focus{ outline:2px solid var(--accent); outline-offset:1px; }
 
-  .index{ display:flex; flex-direction:column; gap:8px; margin-top:20px; }
-  .index-group{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .index{ display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+  .index-group{ display:flex; align-items:flex-start; gap:10px; }
   .index-label{
     font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--ink-faint); flex:1 0 100%;
+    color:var(--ink-faint); flex:0 0 auto; width:120px; padding-top:5px;
   }
+  .index-chips{ display:flex; flex-wrap:wrap; gap:6px; flex:1 1 auto; min-width:0; }
   .index-chip{
     font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
     border:1px solid var(--border); background:var(--surface); color:var(--ink-dim);
@@ -429,7 +430,8 @@
   data.group_order.forEach(function(grp){
     var inGrp = data.competitors.filter(function(c){ return c.group === grp; });
     if(!inGrp.length) return;
-    indexHtml += '<div class="index-group"><span class="index-label">' + escapeHtml(grp) + '</span>' + inGrp.map(chipHtml).join('') + '</div>';
+    indexHtml += '<div class="index-group"><span class="index-label">' + escapeHtml(grp) + '</span>' +
+      '<div class="index-chips">' + inGrp.map(chipHtml).join('') + '</div></div>';
   });
   indexEl.innerHTML = indexHtml;
 

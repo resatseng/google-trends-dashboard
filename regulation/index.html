@@ -105,12 +105,13 @@
   }
   .daterange .clear:hover{ color:var(--ink); border-color:var(--ink-faint); }
 
-  .index{ display:flex; flex-direction:column; gap:8px; margin-top:20px; }
-  .index-group{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .index{ display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+  .index-group{ display:flex; align-items:flex-start; gap:10px; }
   .index-label{
     font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--ink-faint); flex:1 0 100%;
+    color:var(--ink-faint); flex:0 0 auto; width:120px; padding-top:5px;
   }
+  .index-chips{ display:flex; flex-wrap:wrap; gap:6px; flex:1 1 auto; min-width:0; }
   .index-chip{
     font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
     border:1px solid var(--border); background:var(--surface); color:var(--ink-dim);
@@ -360,10 +361,10 @@
     var inCat = data.topics.filter(function(t){ return (t.category || '') === cat; });
     if(!inCat.length) return;
     indexHtml += '<div class="index-group"><span class="index-label">' + escapeHtml(cat) + '</span>' +
-      inCat.map(function(t){
+      '<div class="index-chips">' + inCat.map(function(t){
         return '<button type="button" class="index-chip' + (t.discovered ? ' discovered' : '') + '" data-jump="' + escapeHtml(t.query) + '">' +
           escapeHtml(topicLabel(t)) + '</button>';
-      }).join('') + '</div>';
+      }).join('') + '</div></div>';
   });
   topicIndexEl.innerHTML = indexHtml;
 
