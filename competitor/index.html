@@ -249,7 +249,29 @@
   }
   .back-to-top.visible{ opacity:1; visibility:visible; transform:translateY(0); }
   .back-to-top:hover{ filter:brightness(1.08); }
+
+  .site-nav{
+    display:flex; align-items:center; gap:4px; flex-wrap:wrap;
+    padding:10px 20px; background:var(--surface-2); border-bottom:1px solid var(--border);
+    font-family:var(--font-body); font-size:.82rem;
+  }
+  .site-nav a{
+    color:var(--ink-dim); text-decoration:none; padding:6px 12px; border-radius:8px;
+    transition:background .15s, color .15s;
+  }
+  .site-nav a:hover{ background:var(--surface); color:var(--ink); }
+  .site-nav a.active{ background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  .site-nav .nav-sep{ flex:1; }
+  .site-nav a.nav-home{ color:var(--ink-faint); }
 </style>
+
+<nav class="site-nav">
+  <a href="../">📈 總體商業環境</a>
+  <a href="../competitor/" class="active">🏢 競品情報看板</a>
+  <a href="../regulation/">📜 法規商機看板</a>
+  <span class="nav-sep"></span>
+  <a href="https://resatseng.github.io/" class="nav-home" target="_blank" rel="noopener">🔗 所有專案</a>
+</nav>
 
 <div class="wrap">
   <header class="top">
