@@ -137,6 +137,11 @@
   }
   #weekBoard .item{ background:var(--surface); border-radius:8px; margin-bottom:6px; border-bottom:none; padding:10px 14px; }
   #weekBoard .item:last-child{ margin-bottom:0; }
+  .week-group-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-faint); margin:12px 0 6px;
+  }
+  .week-group-label:first-child{ margin-top:0; }
   .toggle{
     display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--ink-dim);
     cursor:pointer; user-select:none; white-space:nowrap;
@@ -385,7 +390,7 @@
       c.items.forEach(function(it){
         var d = new Date(it.date);
         if(!isNaN(d) && d >= cutoff){
-          weekItems.push({ it: it, topic: c.name, d: d });
+          weekItems.push({ it: it, topic: c.name, group: c.group, d: d });
         }
       });
     });
@@ -395,9 +400,19 @@
     if(!weekItems.length){ section.style.display = 'none'; return; }
     section.style.display = 'block';
     document.getElementById('weekCount').textContent = '(' + weekItems.length + ')';
-    document.getElementById('weekBoard').innerHTML = weekItems.map(function(w){
-      return itemHtml(w.it, '', w.topic);
-    }).join('');
+
+    var ownItems = weekItems.filter(function(w){ return w.group === '本公司'; });
+    var compItems = weekItems.filter(function(w){ return w.group !== '本公司'; });
+    var html = '';
+    if(ownItems.length){
+      html += '<div class="week-group-label">本公司</div>' +
+        ownItems.map(function(w){ return itemHtml(w.it, '', w.topic); }).join('');
+    }
+    if(compItems.length){
+      html += '<div class="week-group-label">競爭者</div>' +
+        compItems.map(function(w){ return itemHtml(w.it, '', w.topic); }).join('');
+    }
+    document.getElementById('weekBoard').innerHTML = html;
   })();
 
   var competitorSelect = document.getElementById('competitorSelect');
