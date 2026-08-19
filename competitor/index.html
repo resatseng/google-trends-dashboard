@@ -490,7 +490,7 @@
       html += '<div class="section-title">' + escapeHtml(grp) + '<span class="count">(' + inGrp.length + ')</span></div>';
       html += inGrp.map(function(x){
         var negCount = x.items.filter(function(it){ return it.neg; }).length;
-        var open = expandAll || negCount > 0 || (!!ql && x.items.some(function(it){ return (it.title || '').toLowerCase().indexOf(ql) !== -1; }));
+        var open = expandAll || (!!ql && x.items.some(function(it){ return (it.title || '').toLowerCase().indexOf(ql) !== -1; }));
         return cardHtml(x.c, x.items, q, open);
       }).join('');
     });
