@@ -108,7 +108,9 @@
   .index-label{
     font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
     color:var(--ink-faint); flex:0 0 auto; width:120px; padding-top:5px;
+    cursor:pointer; background:none; border:none; text-align:left;
   }
+  .index-label:hover{ color:var(--accent); }
   .index-chips{ display:flex; flex-wrap:wrap; gap:6px; flex:1 1 auto; min-width:0; }
   .index-chip{
     font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
@@ -467,12 +469,27 @@
   data.group_order.forEach(function(grp){
     var inGrp = data.competitors.filter(function(c){ return c.group === grp; });
     if(!inGrp.length) return;
-    indexHtml += '<div class="index-group"><span class="index-label">' + escapeHtml(grp) + '</span>' +
+    indexHtml += '<div class="index-group"><button type="button" class="index-label" data-jump-cat="' + escapeHtml(grp) + '">' + escapeHtml(grp) + '</button>' +
       '<div class="index-chips">' + inGrp.map(chipHtml).join('') + '</div></div>';
   });
   indexEl.innerHTML = indexHtml;
 
   indexEl.addEventListener('click', function(e){
+    var catBtn = e.target.closest('.index-label');
+    if(catBtn){
+      var grp = catBtn.getAttribute('data-jump-cat');
+      document.getElementById('searchInput').value = '';
+      document.getElementById('negOnly').checked = false;
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      competitorSelect.value = '';
+      render();
+
+      var section = board.querySelector('.section-title[data-grp="' + CSS.escape(grp) + '"]');
+      if(section){ section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      return;
+    }
+
     var btn = e.target.closest('.index-chip');
     if(!btn) return;
     var name = btn.getAttribute('data-jump');
@@ -526,7 +543,7 @@
     data.group_order.forEach(function(grp){
       var inGrp = filtered.filter(function(x){ return x.c.group === grp; });
       if(!inGrp.length) return;
-      html += '<div class="section-title">' + escapeHtml(grp) + '<span class="count">(' + inGrp.length + ')</span></div>';
+      html += '<div class="section-title" data-grp="' + escapeHtml(grp) + '">' + escapeHtml(grp) + '<span class="count">(' + inGrp.length + ')</span></div>';
       html += inGrp.map(function(x){
         var negCount = x.items.filter(function(it){ return it.neg; }).length;
         var open = expandAll || (!!ql && x.items.some(function(it){ return (it.title || '').toLowerCase().indexOf(ql) !== -1; })) || (negOnly && negCount > 0);

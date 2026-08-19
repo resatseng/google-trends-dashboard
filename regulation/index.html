@@ -110,7 +110,9 @@
   .index-label{
     font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
     color:var(--ink-faint); flex:0 0 auto; width:120px; padding-top:5px;
+    cursor:pointer; background:none; border:none; text-align:left;
   }
+  .index-label:hover{ color:var(--accent); }
   .index-chips{ display:flex; flex-wrap:wrap; gap:6px; flex:1 1 auto; min-width:0; }
   .index-chip{
     font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
@@ -396,7 +398,7 @@
   CATEGORY_ORDER.forEach(function(cat){
     var inCat = data.topics.filter(function(t){ return (t.category || '') === cat; });
     if(!inCat.length) return;
-    indexHtml += '<div class="index-group"><span class="index-label">' + escapeHtml(cat) + '</span>' +
+    indexHtml += '<div class="index-group"><button type="button" class="index-label" data-jump-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</button>' +
       '<div class="index-chips">' + inCat.map(function(t){
         return '<button type="button" class="index-chip' + (t.discovered ? ' discovered' : '') + '" data-jump="' + escapeHtml(t.query) + '">' +
           escapeHtml(topicLabel(t)) + '</button>';
@@ -405,6 +407,19 @@
   topicIndexEl.innerHTML = indexHtml;
 
   topicIndexEl.addEventListener('click', function(e){
+    var catBtn = e.target.closest('.index-label');
+    if(catBtn){
+      var cat = catBtn.getAttribute('data-jump-cat');
+      document.getElementById('searchInput').value = '';
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      render();
+
+      var section = board.querySelector('.section-title[data-cat="' + CSS.escape(cat) + '"]');
+      if(section){ section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      return;
+    }
+
     var btn = e.target.closest('.index-chip');
     if(!btn) return;
     var name = btn.getAttribute('data-jump');
@@ -450,7 +465,7 @@
     CATEGORY_ORDER.forEach(function(cat){
       var inCat = topics.filter(function(t){ return t.category === cat; });
       if(!inCat.length) return;
-      html += '<div class="section-title">' + escapeHtml(cat) + '<span class="count">(' + inCat.length + ')</span></div>';
+      html += '<div class="section-title" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '<span class="count">(' + inCat.length + ')</span></div>';
       html += inCat.map(function(t){
         var open = expandAll || !!ql;
         return cardHtml(t.query, t.label, t.items, q, open);
