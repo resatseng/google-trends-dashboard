@@ -240,6 +240,7 @@
   </div>
 
   <div class="index" id="topicIndex"></div>
+  <div class="index" id="scopeIndex" style="display:none;"></div>
 
   <div class="controls">
     <div class="search">
@@ -382,11 +383,13 @@
   var viewTopicBtn = document.getElementById('viewTopicBtn');
   var viewScopeBtn = document.getElementById('viewScopeBtn');
   var topicIndexEl2 = document.getElementById('topicIndex');
+  var scopeIndexEl2 = document.getElementById('scopeIndex');
   function setView(mode){
     viewMode = mode;
     viewTopicBtn.classList.toggle('active', mode === 'topic');
     viewScopeBtn.classList.toggle('active', mode === 'scope');
     topicIndexEl2.style.display = mode === 'topic' ? '' : 'none';
+    scopeIndexEl2.style.display = mode === 'scope' ? '' : 'none';
     render();
   }
   viewTopicBtn.addEventListener('click', function(){ setView('topic'); });
@@ -435,6 +438,32 @@
       target.classList.add('flash');
       setTimeout(function(){ target.classList.remove('flash'); }, 1600);
     }
+  });
+
+  var scopeIndexEl = document.getElementById('scopeIndex');
+  (function(){
+    var allItems = [];
+    data.topics.forEach(function(t){ t.items.forEach(function(it){ allItems.push(it); }); });
+    var order = SCOPE_CATEGORY_ORDER.length ? SCOPE_CATEGORY_ORDER : ['其他／未明確'];
+    var chipsHtml = order.map(function(cat){
+      var n = allItems.filter(function(it){ return (it.scope_category || '其他／未明確') === cat; }).length;
+      if(!n) return '';
+      return '<button type="button" class="index-chip" data-jump-scope="' + escapeHtml(cat) + '">' +
+        escapeHtml(cat) + ' (' + n + ')</button>';
+    }).join('');
+    scopeIndexEl.innerHTML = '<div class="index-group"><div class="index-chips">' + chipsHtml + '</div></div>';
+  })();
+
+  scopeIndexEl.addEventListener('click', function(e){
+    var btn = e.target.closest('.index-chip');
+    if(!btn) return;
+    var cat = btn.getAttribute('data-jump-scope');
+    document.getElementById('searchInput').value = '';
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    render();
+    var section = board.querySelector('.section-title[data-scope="' + CSS.escape(cat) + '"]');
+    if(section){ section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
 
   var expandAll = false;
@@ -490,7 +519,7 @@
     order.forEach(function(cat){
       var inCat = flat.filter(function(f){ return f.cat === cat; });
       if(!inCat.length) return;
-      html += '<div class="section-title">' + escapeHtml(cat) + '<span class="count">(' + inCat.length + ')</span></div>';
+      html += '<div class="section-title" data-scope="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '<span class="count">(' + inCat.length + ')</span></div>';
       html += '<div class="card open"><div class="items" style="display:block">' +
         inCat.map(function(f){ return itemHtml(f.it, q, f.topic); }).join('') +
         '</div></div>';
