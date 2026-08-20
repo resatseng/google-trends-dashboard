@@ -513,13 +513,15 @@
         if(!dateInRange(it.date, dFrom, dTo)) return false;
         if(!ql) return true;
         return ((it.regulation || '') + it.title + t.query).toLowerCase().indexOf(ql) !== -1;
-      });
-      return { query: t.query, label: topicLabel(t), category: t.category || '', items: items };
+      }).sort(function(a, b){ return new Date(b.date) - new Date(a.date); });
+      var latest = items.length ? new Date(items[0].date) : new Date(0);
+      return { query: t.query, label: topicLabel(t), category: t.category || '', items: items, latest: latest };
     }).filter(function(t){ return t.items.length; });
 
     var html = '';
     CATEGORY_ORDER.forEach(function(cat){
-      var inCat = topics.filter(function(t){ return t.category === cat; });
+      var inCat = topics.filter(function(t){ return t.category === cat; })
+        .sort(function(a, b){ return b.latest - a.latest; });
       if(!inCat.length) return;
       html += '<div class="section-title" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '<span class="count">(' + inCat.length + ')</span></div>';
       html += inCat.map(function(t){
@@ -571,6 +573,12 @@
       inCat.forEach(function(f){
         if(!subGroups[f.sub]){ subGroups[f.sub] = []; subOrder.push(f.sub); }
         subGroups[f.sub].push(f);
+      });
+      subOrder.forEach(function(sub){
+        subGroups[sub].sort(function(a, b){ return new Date(b.it.date) - new Date(a.it.date); });
+      });
+      subOrder.sort(function(a, b){
+        return new Date(subGroups[b][0].it.date) - new Date(subGroups[a][0].it.date);
       });
       html += subOrder.map(function(sub){
         var entries = subGroups[sub];
