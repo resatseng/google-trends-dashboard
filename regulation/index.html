@@ -443,28 +443,60 @@
 
   var scopeIndexEl = document.getElementById('scopeIndex');
   (function(){
-    var allItems = [];
-    data.topics.forEach(function(t){ t.items.forEach(function(it){ allItems.push(it); }); });
+    var allEntries = [];
+    data.topics.forEach(function(t){
+      t.items.forEach(function(it){
+        allEntries.push({ it: it, sub: topicLabel(t), cat: it.scope_category || '其他／未明確' });
+      });
+    });
     var order = SCOPE_CATEGORY_ORDER.length ? SCOPE_CATEGORY_ORDER : ['其他／未明確'];
-    var chipsHtml = order.map(function(cat){
-      var n = allItems.filter(function(it){ return (it.scope_category || '其他／未明確') === cat; }).length;
-      if(!n) return '';
-      return '<button type="button" class="index-chip" data-jump-scope="' + escapeHtml(cat) + '">' +
-        escapeHtml(cat) + ' (' + n + ')</button>';
-    }).join('');
-    scopeIndexEl.innerHTML = '<div class="index-group"><div class="index-chips">' + chipsHtml + '</div></div>';
+    var indexHtml = '';
+    order.forEach(function(cat){
+      var inCat = allEntries.filter(function(e){ return e.cat === cat; });
+      if(!inCat.length) return;
+      var subGroups = {};
+      var subOrder = [];
+      inCat.forEach(function(e){
+        if(!subGroups[e.sub]){ subGroups[e.sub] = 0; subOrder.push(e.sub); }
+        subGroups[e.sub]++;
+      });
+      indexHtml += '<div class="index-group"><button type="button" class="index-label" data-jump-scope-cat="' + escapeHtml(cat) + '">' +
+        escapeHtml(cat) + ' (' + inCat.length + ')</button>' +
+        '<div class="index-chips">' + subOrder.map(function(sub){
+          return '<button type="button" class="index-chip" data-jump-scope="' + escapeHtml(cat + '｜' + sub) + '">' +
+            escapeHtml(sub) + ' (' + subGroups[sub] + ')</button>';
+        }).join('') + '</div></div>';
+    });
+    scopeIndexEl.innerHTML = indexHtml;
   })();
 
   scopeIndexEl.addEventListener('click', function(e){
+    var catBtn = e.target.closest('.index-label');
+    if(catBtn){
+      var cat = catBtn.getAttribute('data-jump-scope-cat');
+      document.getElementById('searchInput').value = '';
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      render();
+      var section = board.querySelector('.section-title[data-scope="' + CSS.escape(cat) + '"]');
+      if(section){ section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      return;
+    }
+
     var btn = e.target.closest('.index-chip');
     if(!btn) return;
-    var cat = btn.getAttribute('data-jump-scope');
+    var key = btn.getAttribute('data-jump-scope');
     document.getElementById('searchInput').value = '';
     document.getElementById('dateFrom').value = '';
     document.getElementById('dateTo').value = '';
     render();
-    var section = board.querySelector('.section-title[data-scope="' + CSS.escape(cat) + '"]');
-    if(section){ section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    var target = board.querySelector('.card[data-name="' + CSS.escape(key) + '"]');
+    if(target){
+      target.classList.add('open');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('flash');
+      setTimeout(function(){ target.classList.remove('flash'); }, 1600);
+    }
   });
 
   var expandAll = false;
@@ -505,13 +537,25 @@
     });
   }
 
+  function scopeCardHtml(key, label, entries, q, open){
+    return '' +
+      '<div class="card' + (open ? ' open' : '') + '" data-name="' + escapeHtml(key) + '">' +
+        '<div class="card-head">' +
+          '<span class="caret">&#9656;</span>' +
+          '<span class="card-name">' + highlight(label, q) + '</span>' +
+          '<div class="badges"><span class="badge">相關新聞 ' + entries.length + '</span></div>' +
+        '</div>' +
+        '<div class="items">' + entries.map(function(e){ return itemHtml(e.it, q); }).join('') + '</div>' +
+      '</div>';
+  }
+
   function renderByScope(q, ql, dFrom, dTo){
     var flat = [];
     data.topics.forEach(function(t){
       t.items.forEach(function(it){
         if(!dateInRange(it.date, dFrom, dTo)) return;
         if(ql && ((it.regulation || '') + it.title + t.query).toLowerCase().indexOf(ql) === -1) return;
-        flat.push({ it: it, topic: topicLabel(t), cat: it.scope_category || '其他／未明確' });
+        flat.push({ it: it, topicLabel: topicLabel(t), cat: it.scope_category || '其他／未明確', sub: topicLabel(t) });
       });
     });
 
@@ -521,12 +565,27 @@
       var inCat = flat.filter(function(f){ return f.cat === cat; });
       if(!inCat.length) return;
       html += '<div class="section-title" data-scope="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '<span class="count">(' + inCat.length + ')</span></div>';
-      html += '<div class="card open"><div class="items" style="display:block">' +
-        inCat.map(function(f){ return itemHtml(f.it, q, f.topic); }).join('') +
-        '</div></div>';
+
+      var subGroups = {};
+      var subOrder = [];
+      inCat.forEach(function(f){
+        if(!subGroups[f.sub]){ subGroups[f.sub] = []; subOrder.push(f.sub); }
+        subGroups[f.sub].push(f);
+      });
+      html += subOrder.map(function(sub){
+        var entries = subGroups[sub];
+        var open = expandAll || !!ql;
+        return scopeCardHtml(cat + '｜' + sub, sub, entries, q, open);
+      }).join('');
     });
     board.innerHTML = html;
     emptyMsg.style.display = flat.length ? 'none' : 'block';
+
+    Array.prototype.forEach.call(board.querySelectorAll('.card-head'), function(head){
+      head.addEventListener('click', function(){
+        head.parentElement.classList.toggle('open');
+      });
+    });
   }
 
   function render(){
