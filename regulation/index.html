@@ -400,10 +400,11 @@
   CATEGORY_ORDER.forEach(function(cat){
     var inCat = data.topics.filter(function(t){ return (t.category || '') === cat; });
     if(!inCat.length) return;
-    indexHtml += '<div class="index-group"><button type="button" class="index-label" data-jump-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</button>' +
+    var catCount = inCat.reduce(function(sum, t){ return sum + t.items.length; }, 0);
+    indexHtml += '<div class="index-group"><button type="button" class="index-label" data-jump-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + ' (' + catCount + ')</button>' +
       '<div class="index-chips">' + inCat.map(function(t){
         return '<button type="button" class="index-chip' + (t.discovered ? ' discovered' : '') + '" data-jump="' + escapeHtml(t.query) + '">' +
-          escapeHtml(topicLabel(t)) + '</button>';
+          escapeHtml(topicLabel(t)) + ' (' + t.items.length + ')</button>';
       }).join('') + '</div></div>';
   });
   topicIndexEl.innerHTML = indexHtml;
