@@ -1,0 +1,474 @@
+<title>商機訊號看板</title>
+<style>
+  :root{
+    --bg:#F1F2F6;
+    --surface:#FFFFFF;
+    --surface-2:#E8EAF0;
+    --ink:#1B2030;
+    --ink-dim:#5B6072;
+    --ink-faint:#8A8FA0;
+    --border:#D9DCE4;
+    --accent:#2C6E8F;
+    --accent-soft:#DCEAF1;
+    --danger:#A8402F;
+    --danger-soft:#F6DEDA;
+    --safe:#3C7A5C;
+    --safe-soft:#DDEFE6;
+    --shadow: 0 1px 2px rgba(20,22,30,.06), 0 8px 24px -12px rgba(20,22,30,.14);
+    --font-display: "Iowan Old Style", "Songti TC", "PMingLiU", Georgia, serif;
+    --font-body: -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Consolas, "Courier New", monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1040px; margin:0 auto; padding:40px 24px 80px; }
+
+  header.top{ margin-bottom:32px; }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 10px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:600; font-size:clamp(26px,4vw,36px);
+    margin:0 0 8px; text-wrap:balance; letter-spacing:.01em;
+  }
+  .sub{ color:var(--ink-dim); font-size:15px; margin:0 0 8px; max-width:100%; }
+  .sub:last-child{ margin-bottom:0; }
+
+  .stats{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:1px; background:var(--border); border:1px solid var(--border);
+    border-radius:10px; overflow:hidden; margin-top:28px;
+  }
+  .stat{ background:var(--surface); padding:16px 18px; }
+  .stat .n{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; }
+  .stat .l{ font-size:12.5px; color:var(--ink-dim); margin-top:2px; }
+
+  .controls{
+    display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+    margin:32px 0 20px; padding-bottom:16px; border-bottom:1px solid var(--border);
+  }
+  .search{ flex:1; min-width:220px; }
+  .search input{
+    width:100%; padding:10px 14px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); font-size:14px; font-family:var(--font-body);
+  }
+  .search input:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .daterange{ display:flex; align-items:center; gap:6px; font-size:13px; color:var(--ink-dim); }
+  .daterange input[type=date]{
+    padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink); font-family:var(--font-mono); font-size:13px;
+  }
+  .daterange input[type=date]:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  .daterange .clear{
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); cursor:pointer;
+    background:none; border:1px solid var(--border); border-radius:8px; padding:7px 10px;
+  }
+  .daterange .clear:hover{ color:var(--ink); border-color:var(--ink-faint); }
+
+  .index{ display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+  .index-group{ display:flex; align-items:flex-start; gap:10px; }
+  .index-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-faint); flex:0 0 auto; width:150px; padding-top:5px;
+    cursor:pointer; background:none; border:none; text-align:left;
+  }
+  .index-label:hover{ color:var(--accent); }
+  .index-chips{ display:flex; flex-wrap:wrap; gap:6px; flex:1 1 auto; min-width:0; }
+  .index-chip{
+    font-family:var(--font-mono); font-size:12px; padding:4px 11px; border-radius:99px;
+    border:1px solid var(--border); background:var(--surface); color:var(--ink-dim);
+    cursor:pointer; white-space:nowrap;
+  }
+  .index-chip:hover{ border-color:var(--accent); color:var(--accent); }
+  .card.flash{ animation: flash-highlight 1.6s ease; }
+  @keyframes flash-highlight{
+    0%{ box-shadow:0 0 0 3px var(--accent); }
+    100%{ box-shadow:var(--shadow); }
+  }
+
+  .week-section{
+    border:1px solid var(--accent); border-radius:10px; background:var(--accent-soft);
+    padding:16px 18px; margin-bottom:24px;
+  }
+  .week-title{
+    font-family:var(--font-mono); font-size:13px; font-weight:700; letter-spacing:.06em;
+    color:var(--accent); margin-bottom:10px; display:flex; align-items:baseline; gap:8px;
+  }
+  .week-title .count{ font-family:var(--font-mono); font-weight:400; color:var(--ink-dim); }
+  .week-item-topic{
+    font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);
+    text-transform:uppercase; letter-spacing:.04em;
+  }
+  #weekBoard .item{ background:var(--surface); border-radius:8px; margin-bottom:6px; border-bottom:none; padding:10px 14px; }
+  #weekBoard .item:last-child{ margin-bottom:0; }
+
+  .board{ display:flex; flex-direction:column; gap:10px; }
+
+  .section-title{
+    font-family:var(--font-mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-faint); margin:28px 0 4px; padding-bottom:8px; border-bottom:1px solid var(--border);
+    display:flex; align-items:baseline; gap:8px;
+  }
+  .section-title:first-child{ margin-top:4px; }
+  .section-title .count{ font-family:var(--font-mono); color:var(--ink-dim); }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+
+  .card-head{
+    display:flex; align-items:center; gap:14px; padding:15px 18px;
+    cursor:pointer; -webkit-tap-highlight-color:transparent;
+  }
+  .card-head:hover{ background:var(--surface-2); }
+  .card-head .caret{
+    font-family:var(--font-mono); color:var(--ink-faint); font-size:12px; width:12px; flex:none;
+    transition:transform .15s ease;
+  }
+  .card.open .caret{ transform:rotate(90deg); }
+  .card-name{ font-weight:600; font-size:15.5px; flex:1; min-width:0; }
+  .card-name span.match{ background:var(--accent-soft); color:var(--accent); border-radius:3px; padding:0 2px; }
+  .badges{ display:flex; gap:8px; flex:none; }
+  .badge{
+    font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:12px;
+    padding:3px 9px; border-radius:99px; border:1px solid var(--border); color:var(--ink-dim);
+    white-space:nowrap;
+  }
+
+  .items{ display:none; border-top:1px solid var(--border); }
+  .card.open .items{ display:block; }
+
+  .item{
+    padding:14px 18px 14px 34px; border-bottom:1px solid var(--border);
+    display:flex; flex-direction:column; gap:5px;
+  }
+  .item:last-child{ border-bottom:none; }
+  .item-top{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .pill{
+    font-size:11px; font-family:var(--font-mono); padding:1px 7px; border-radius:99px;
+    flex:none; letter-spacing:.02em; background:var(--accent-soft); color:var(--accent);
+  }
+  .item a.title{
+    color:var(--ink); text-decoration:none; font-size:14.5px; font-weight:500; line-height:1.4;
+  }
+  .item a.title:hover{ text-decoration:underline; text-decoration-color:var(--ink-faint); }
+  .item .meta{
+    font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint);
+  }
+  .item{ cursor:pointer; }
+  .item .reason{ font-size:12.5px; color:var(--ink-dim); margin-top:1px; display:none; }
+  .item.show-reason .reason{ display:block; }
+  .item .reason-hint{ font-size:11px; color:var(--ink-faint); font-family:var(--font-mono); margin-top:1px; }
+  .item.show-reason .reason-hint{ display:none; }
+
+  .empty{ text-align:center; padding:60px 20px; color:var(--ink-faint); font-size:14px; }
+
+  footer{
+    margin-top:48px; padding-top:20px; border-top:1px solid var(--border);
+    font-size:12.5px; color:var(--ink-faint); line-height:1.7;
+  }
+  footer code{ font-family:var(--font-mono); background:var(--surface-2); padding:1px 5px; border-radius:4px; }
+
+  .back-to-top{
+    position:fixed; right:24px; bottom:24px; width:44px; height:44px; border-radius:99px;
+    background:var(--accent); color:#fff; border:none; box-shadow:var(--shadow);
+    font-size:18px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; visibility:hidden; transform:translateY(8px);
+    transition:opacity .2s ease, transform .2s ease, visibility .2s;
+    z-index:50;
+  }
+  .back-to-top.visible{ opacity:1; visibility:visible; transform:translateY(0); }
+  .back-to-top:hover{ filter:brightness(1.08); }
+
+  .site-nav{
+    display:flex; align-items:center; gap:4px; flex-wrap:wrap;
+    padding:10px 20px; background:var(--surface-2); border-bottom:1px solid var(--border);
+    font-family:var(--font-body); font-size:.82rem;
+  }
+  .site-nav a{
+    color:var(--ink-dim); text-decoration:none; padding:6px 12px; border-radius:8px;
+    transition:background .15s, color .15s;
+  }
+  .site-nav a:hover{ background:var(--surface); color:var(--ink); }
+  .site-nav a.active{ background:var(--accent-soft); color:var(--accent); font-weight:600; }
+  .corner-link{
+    position:fixed; top:14px; right:16px; z-index:60;
+    font-family:var(--font-body); font-size:.78rem; font-weight:600;
+    color:var(--ink-dim); text-decoration:none; padding:6px 13px; border-radius:99px;
+    background:var(--surface); border:1px solid var(--border); box-shadow:var(--shadow);
+    transition:color .15s, border-color .15s;
+  }
+  .corner-link:hover{ color:var(--accent); border-color:var(--accent); }
+</style>
+
+<nav class="site-nav">
+  <a href="../">📈 總體商業環境</a>
+  <a href="../competitor/">🏢 競品情報看板</a>
+  <a href="../regulation/">📜 法規商機看板</a>
+  <a href="../opportunity/" class="active">🚀 商機訊號看板</a>
+</nav>
+<a href="https://resatseng.github.io/" class="corner-link" target="_blank" rel="noopener">🔗 所有專案</a>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Opportunity Signals &middot; 商機情報</p>
+    <h1>商機訊號看板</h1>
+    <p class="sub">從 Google News 廣泛偵測「企業擴張與資本動作」「KeyMan異動」兩類事件，經 Gemini 從新聞標題辨識出公司名稱與事件摘要，用來找出可能伴隨管理系統升級/擴充需求的客戶輪廓。資料日期 <span id="genDate"></span>。</p>
+    <p class="sub">監控範圍：不綁定特定公司名單，用產業常見新聞慣用語（如「完成增資」「接任總經理」）廣泛查詢，由 LLM 自動辨識出相關公司並分組呈現。</p>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="index" id="topicIndex"></div>
+
+  <div class="controls">
+    <div class="search">
+      <input type="text" id="searchInput" placeholder="搜尋公司名稱或新聞標題…" />
+    </div>
+    <div class="daterange">
+      <span>新聞日期</span>
+      <input type="date" id="dateFrom" />
+      <span>&ndash;</span>
+      <input type="date" id="dateTo" />
+      <button class="clear" id="dateClear" type="button">清除</button>
+    </div>
+    <button class="clear" id="expandToggle" type="button">全部展開</button>
+  </div>
+
+  <section class="week-section" id="weekSection" style="display:none;">
+    <div class="week-title">本週新聞<span class="count" id="weekCount"></span></div>
+    <div id="weekBoard"></div>
+  </section>
+
+  <div class="board" id="board"></div>
+  <p class="empty" id="emptyMsg" style="display:none;">沒有符合條件的結果</p>
+
+  <footer>
+    來源：Google News RSS（查詢詞為產業常見新聞慣用語，如「完成增資」「首次公開發行」「接任總經理」「延攬 高階主管」），逐則由 <code>gemini-3.1-flash-lite</code> 判斷是否為具體事件並辨識公司名稱。此看板為候選訊號初篩，實際是否為既有客戶或潛在客戶仍需回頭比對法人/CRM資料庫才能確認。競品新聞另見「競品情報看板」，法規動態另見「法規商機看板」。<br/>
+    此看板僅涵蓋「企業擴張與資本動作」「KeyMan異動」兩類外部新聞可監控的訊號；「關鍵職缺招聘」也是商機訊號來源之一，但求才職缺屬於刊登資訊而非新聞報導，需改用104人力銀行等職缺網站爬蟲，架構不同，暫未納入本看板。
+  </footer>
+</div>
+
+<button type="button" id="backToTop" class="back-to-top" aria-label="回到最上面">&#8593;</button>
+
+<script>
+(function(){
+  var data = {"generated": "2026-08-21", "topics": [{"query": "日勝生", "label_zh": "日勝生", "category": "企業擴張與資本動作", "items": [{"event": "日勝生投入6.12億元參與日鼎投控現金增資案", "reason": "企業進行資本運作與增資活動，通常伴隨營運規模擴大及集團資源整合之管理需求。", "title": "日勝生宣布 6.12億元全額參加日鼎投控現金增資案 - 台灣好新聞", "source": "台灣好新聞", "date": "Wed, 13 May 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMi1wJBVV95cUxOWmN0WFo2LUtydjNXa1ZqdUFDRzUxLXhyNV9fV3Vid3FKSUJEbmdWdGxEUXJ1LVF5NGZrRlhGUy1RQzNZR1ZETVI2bW1ISXRzV1BvT0luRWV2X0hBaFpreUlLeDZDeGVQSFliOTcxRThXOVNCMHVMQXJKMGJGTS10eFBhQ2wtQ3ljeDZyTXBDQ0RfUDRRR0ktRFBSRWJmaGNoZERtd3ptcWdlOExnOWxka282UG9mTTdDcndTbjBzRUdHSVg5bGZGUFV0WjJxeTZNZ3lsQUFkcmJfRHgwV2Fhc1Z2dk9CeHNBWTVDZ2JkbDBRSnJTMDlDSUNValBqNHRPWC15a082Vlg5bGhLZWhsY05NMnE1RmlwTEUteG45bXZiWTc3QTBvSmY3aTNFOW1SeTFsazRNU0dXUmJOX084SDNvMTI4bTlVLTRTNW9Pcll4SF95STVr?oc=5"}]}, {"query": "和勤", "label_zh": "和勤", "category": "企業擴張與資本動作", "items": [{"event": "和勤辦理現金增資以籌措營運資金", "reason": "現金增資屬於企業資本動作，通常代表公司有擴大經營規模或改善財務結構的具體規劃。", "title": "報酬率13%？和勤(1586)現金增資公開申購，股票抽籤該注意什麼？ - 鏈新聞 ABMedia", "source": "鏈新聞 ABMedia", "date": "Sat, 04 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9fazN3WXZoa1FobEt1Q3JWbjEwSGhkaG85OEkzWjJFM0tNc2R3WjFjVHZreEtVUE1GUVZPT01KSzVFbVhBOWIxaWkzWG5VdkRzUnVvLW9R?oc=5"}]}, {"query": "欣興", "label_zh": "欣興", "category": "企業擴張與資本動作", "items": [{"event": "擬現金增資發行GDR海外籌資並認購尖點私募轉換債", "reason": "企業透過海外籌資進行資本擴張，並參與策略性投資，具備明確的管理系統升級與資源配置需求。", "title": "欣興發重訊！擬現金增資發行GDR海外籌資 認購尖點私募轉換債 - TVBS新聞網", "source": "TVBS新聞網", "date": "Sat, 11 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1SeFh0UGZmUDRfUVJBVWFrcVQ0YmkzYWxjd1Iyc3RFSWs5LWc0R0phLVpONDlxZzBBZGhPYS1xelJSdnc0Q0JqalVNMk5PWmc?oc=5"}]}, {"query": "高明鐵", "label_zh": "高明鐵", "category": "企業擴張與資本動作", "items": [{"event": "辦理現金增資並進行股款催繳程序", "reason": "企業透過現金增資籌措資金，屬於明確的資本擴張與財務動作，具備系統升級與管理優化之潛在需求。", "title": "興櫃：高明鐵(4573)115年現金增資股款催繳期間訂6/26起至7/27 - 富聯網", "source": "富聯網", "date": "Wed, 24 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNNmc0aERHUDZtTDlaWjJXVFplMEtmNjFEcmVkY1BZZFJRSjZ6RFdiYmdQclphdVUwMTk1SG5aMWZyNzYxb1BnZnRodkw5bmZUTXVVb0lvbWhDbjMzRWVBMXBOU1hkU1R5RjdPQ2lSOEZJVlJMTjV1R3RQWUZkTmtEdHpMdVo0TFla?oc=5"}]}, {"query": "京元電", "label_zh": "京元電", "category": "企業擴張與資本動作", "items": [{"event": "京元電子正式宣布撤回原定的現金增資發行新股案", "reason": "涉及企業重大的資本結構調整與財務決策變更，通常伴隨內部營運與資本策略的調整需求。", "title": "京元電宣布撤回現金增資發行新股案，公司揭露主要原因 | 林彥呈 | 財經 - 風傳媒", "source": "風傳媒", "date": "Thu, 09 Oct 2025 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFBvWnMzdllXSGdDQ2M3cUpCUFFIdGFhSzJ4ejhhc2xObmF2enVxYjM2WEk2ODkxNTduQUFJeGdDSHpBWlNmczlUeDhxblhWQQ?oc=5"}]}, {"query": "永捷", "label_zh": "永捷", "category": "企業擴張與資本動作", "items": [{"event": "永捷辦理現金增資，進行公開申購股票發行", "reason": "現金增資屬於具體的企業籌資與資本動作，通常涉及資金用途擴充及後續管理需求。", "title": "報酬率9%？永捷(4714)現金增資公開申購，股票抽籤該注意什麼？ - 鏈新聞 ABMedia", "source": "鏈新聞 ABMedia", "date": "Mon, 29 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE1IaGVwZDRWV1dlSmJRaFI3aUFKLUQ4NlhGekRpZFhnOUppaFhZUWh1WUdLR0NxaHd6LXd4Yi1FSVpwZzRZOTF1ZHlrNE1xZXBzSjhCc0NR?oc=5"}]}, {"query": "宇樹科技", "label_zh": "宇樹科技", "category": "企業擴張與資本動作", "items": [{"event": "宇樹科技啟動首次公開發行股票並計畫於科創板上市", "reason": "企業進行IPO上市屬於重大的資本運作行為，通常伴隨管理架構調整與內控系統升級需求。", "title": "首程控股(00697.HK)：宇樹科技首次公開發行股票並於科創板上市 - TradingView", "source": "TradingView", "date": "Wed, 19 Aug 2026 04:57:23 GMT", "link": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5KRExqa19VejlqOUttdS1qeElwZkVBTVNvZm1QM3N0QXhzajNYUHVXa3U0TDBQcm1GUVg1N1RtUEJ4YkplVkRSdTFnOUNBV1k5QmlKNlptei1vd3E1eWpOQnY3X3BRXzJkVmc?oc=5"}]}, {"query": "OpenAI", "label_zh": "OpenAI", "category": "企業擴張與資本動作", "items": [{"event": "OpenAI計劃於9月進行首次公開發行（IPO）上市", "reason": "企業進行IPO屬於重大的資本市場動作，通常會伴隨內控、財會及營運管理系統的升級需求。", "title": "OpenAI申請首次公開發行IPO 預計9月上市估值1兆美元 - 公視新聞網PNN", "source": "公視新聞網PNN", "date": "Tue, 09 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE42aEJ0MDM1Smp3UUM3VUg5bTZVRkpsUGZ0SVFzd2dZSE9aczFpLS1ablRneEJFYXZoektFX1gtS1BpcTlNZ2pjT0pnSzZ4VlU?oc=5"}]}, {"query": "Vernal Capital Acquisition Corp.", "label_zh": "Vernal Capital Acquisition Corp.", "category": "企業擴張與資本動作", "items": [{"event": "公司完成1億美元首次公開發行(IPO)定價", "reason": "企業進行IPO屬於重大資本動作，後續常伴隨合規、財務管理與營運系統升級需求。", "title": "Vernal Capital Acquisition Corp.宣佈1億美元首次公開發行定價 - 經濟日報", "source": "經濟日報", "date": "Wed, 06 May 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE84cldfdGlTYjRVT2h2aFZqVmhsdnBhcmhmSlRQc1pucWtHM3JMcm1OeEw5ZC14SU4xTE15cDNQUFozSWxvQzgzS3JLU1R5S3E0OHlOVERoN2RFbFRH0gFiQVVfeXFMTy1wRXBONFY2c0NKck1Bd19NSDNoQ0hNVEVJNjJiZjZGV3B5ZXV0OVNrVHNacDQ1emZfSE1OS3hxSUJ4RjBIbklxcUVJSGdOT01SYUo2T19Gd0FCYk8tX2EwVGc?oc=5"}]}, {"query": "和運租車", "label_zh": "和運租車", "category": "企業擴張與資本動作", "items": [{"event": "和運租車計畫於8月正式掛牌上市", "reason": "企業公開發行上市屬於重大的資本市場動作，通常伴隨財務報表與管理系統升級需求。", "title": "和運租車8月掛牌 成為和泰集團另一小金雞 - 自由財經", "source": "自由財經", "date": "Tue, 14 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE14ZTJYOUxpNzZ2R2RuMVo3U3ZKWWtLdTN0dTFyV2VYU1hrb3NsSlMzUnNSbmRQWnkyVkVjM1pqcnFUVHN6X3hOVlJLdktSeVRIVGNTZm81bkVLUlhPMURB0gFkQVVfeXFMTzBYUXBKWkhNYTBDUjdZUDl2alo1SDlFMUEzc2xuYjNseVFTMmh4MVlJaUxzZFQ3UWFkMXI0SWxpcFBkVWpuMVMzQUwwMk5iWWxTdGE1SnZzWXhKVmFtRmNQRy1veQ?oc=5"}]}, {"query": "華潤電力", "label_zh": "華潤電力", "category": "企業擴張與資本動作", "items": [{"event": "華潤新能源控股實施A股首次公開發行超額配售", "reason": "涉及企業IPO後續的資本市場操作（超額配售選擇權），屬於明確的資本動作與規模擴張事件。", "title": "華潤電力（00836）：華潤新能源控股首次公開發行A股超額配售選擇權實施|香港經濟日報 - 香港經濟日報HKET", "source": "香港經濟日報HKET", "date": "Mon, 03 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiwgNBVV95cUxOUXkzNG83Nm5XQVBRcnU0N2VocVRYR3JXcUJEMV9vQnpyamI5ci00VFVROER2YlF6alV5WjE3ZFp2aXdfT2NWamlmTHdWRnZOak9Kc3hlYU1wWFg4YUtpVjBqUjNtNFJRMEF0Xzl1WG9XY0tYM0sydEpmYzd4TUR6M2ExVFl0eXdFUjNIdElRa3FnVnIwQWp5dktfR01BS2hhM2xOc2habHBSaDVJYTZUOW43Wm40UmU0c05wckxyWE5hSWxBaTlISHVVb3dQbEU2V1NBRkNJeC0zblpKY2dNanZDdEItT1VBRm9tOFYtR0NDRjk5ZkotODVENW5LY19zdjdmaFJvZFJyamliaV9aV3ZyUlktb2wzWXIyckNWLWVMX0hjQTVCTG1TaTY2REhTbEItT3Vnb0c2NlBHdG9aQzV6QjA1dWplczdSTGdIU2hUdTBucVF3SXIyVjRmX1Y2WEdsTGJYZWx1bDFERndCZURFbkluLWNEVVRNcFFYdlFfUkl1QUlQd0lYTHplcXBoODREV050RGFtS2x3a3F6YmYzcTNlekRxenVJMHBNeklUVW1RUmtCbHFLdUdnaS05OFE?oc=5"}]}, {"query": "SpaceX", "label_zh": "SpaceX", "category": "企業擴張與資本動作", "items": [{"event": "SpaceX進行首次公開發行並獲四倍超額認購", "reason": "企業進行IPO公開發行屬於重大資本運作，通常伴隨財務透明化與管理系統升級需求。", "title": "SpaceX首次公開發行掀搶購潮 已獲4倍超額認購史上最大 - 公視新聞網PNN", "source": "公視新聞網PNN", "date": "Thu, 11 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5hczdrM29sOGxNWE9ybHFOMmd4SXdtYUcyUW02SF9LNTllWUItRnZvdGREbk1UcHM1LWttcTh6S25FeDN3S0wzdjdfNU9kM1U?oc=5"}]}, {"query": "台積電", "label_zh": "台積電", "category": "企業擴張與資本動作", "items": [{"event": "台積電加速全球化佈局，持續進行海外建廠與擴產", "reason": "新聞聚焦台積電海外設廠策略與擴張行動，屬於典型的企業資本佈局與產能擴充活動。", "title": "台積電客戶來源曝光！一文看懂海外設廠背後原因 但「這」仍是關鍵 - 自由財經", "source": "自由財經", "date": "Wed, 19 Aug 2026 07:08:11 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5SSE1faEtjem42aHNsNzdaTUpoOHRkVnJGMkZlcXBuWENWRnMtQ0F1dVFiR0k2M0xaYzR0UmM3QVh2bXJWblVFX19YTkNmM1dMODFyUEU1ZUlWVl9BcktZ?oc=5"}]}, {"query": "Okins Electronics", "label_zh": "Okins Electronics", "category": "企業擴張與資本動作", "items": [{"event": "在台灣設立子公司以擴大AI與非記憶體測試業務", "reason": "企業設立子公司屬於具體的市場擴張行為，常伴隨跨國營運系統建置需求。", "title": "Okins Electronics在台設立子公司…搶攻AI與非記憶體測試市場 - BigGo 財經", "source": "BigGo 財經", "date": "Wed, 12 Aug 2026 06:55:00 GMT", "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTE4zTXhPM2Z1c3FaclVoRkVmbEZ4aWloR19ndDhQckxOc3I0RkJBMVJhX3o2c01uN3l3OTJZZzhfR1owcEFkdExHdmdrLTBtWkJub3dkMzJlN01mdmh4RU4waGhmaWdaeWx5MVFtdFowUXVFcWxoaDg0TGNn?oc=5"}]}, {"query": "TechMet", "label_zh": "TechMet", "category": "企業擴張與資本動作", "items": [{"event": "於美國設立子公司以擴展業務並進行資本募資", "reason": "該公司具體執行海外據點擴張與資本運作，符合系統導入或升級之潛在需求。", "title": "礦業投資公司TechMet在美國設立子公司以吸引更多資本 - TradingView", "source": "TradingView", "date": "Mon, 10 Aug 2026 11:00:29 GMT", "link": "https://news.google.com/rss/articles/CBMid0FVX3lxTE5MRjljMWJUaE1MSHo1U09EOHhWSFhaeGhUTF9kbDFJamo1N3NBZWZHX2pIbHdSbVpLRHFkRmZqSDdwbGJNS2trQzZacU95Z3lPeDFfc190RzlZSTBUZS1lWVdITHVldldGaTBUN25rSTN4bkZ3dTA0?oc=5"}]}, {"query": "津富士達、巨大、美利達", "label_zh": "津富士達、巨大、美利達", "category": "企業擴張與資本動作", "items": [{"event": "津富士達啟動IPO與海外設廠，同業進行產能布局調整", "reason": "涉及企業公開發行上市(IPO)及海外設廠之資本擴張與營運調整，符合需求。", "title": "中國自行車代工龍頭津富士達IPO 海外設廠搶歐美訂單，巨大、美利達同步調整布局 - 優分析UAnalyze", "source": "優分析UAnalyze", "date": "Mon, 03 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE1ZODZObWVVemJkazBhNjMyb3Z1dnJiaXVZdGVHYko1MXpEbUtIYmY3T2JMZjJKRjNMaFp2c3poZVJkeEdweVVqZkMzTjh4SGJ6T0U3M3pB?oc=5"}]}, {"query": "FIFA", "label_zh": "FIFA", "category": "企業擴張與資本動作", "items": [{"event": "FIFA原訂設立子公司計畫後於3天內撤回", "reason": "企業設立子公司屬於明確的組織擴張與資本動作，雖最終撤回仍屬相關商機訊號。", "title": "FIFA設立子公司計畫公布3天後撤回 歐足聯強烈批評 - 共同網", "source": "共同網", "date": "Mon, 03 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFByRDRoY0dZNmhqQlFFdWhCUTd1WEJjN0RRZEN5eTBWVXZEUTdIaV8tXzg5Z3pGWk9TVE9Pc2xBVUVQb3Ffcnl5UDRCNXgxWnNMVHpBcTJoU3Q?oc=5"}]}, {"query": "卓翼科技", "label_zh": "卓翼科技", "category": "企業擴張與資本動作", "items": [{"event": "擬設立子公司並引入外部投資方增資9800萬元", "reason": "該公司有明確的設立子公司與資本增資動作，屬於典型的組織擴張與資本變動事件。", "title": "卓翼科技(002369.SZ)擬設立子公司並引入投資方增資9800萬元 作者 智通財經 - Investing.com 香港 - 股市報價& 財經新聞", "source": "Investing.com 香港 - 股市報價& 財經新聞", "date": "Wed, 05 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBwc1JZejNnMmp3SzBsNVEyZExzZmFSdUx1Q05qY0ZfTFNnSHZYYW92TTl4NTV1akF0YzBnY0piLVB1UFg2MEl1Qng4dFRJRmFfanBYTEp6dk85ZzNUUE9ncVZVWjNiVGJUeGFVVVJ0OGE?oc=5"}]}, {"query": "北玻股份", "label_zh": "北玻股份", "category": "企業擴張與資本動作", "items": [{"event": "控股子公司對外投資設立新子公司進展", "reason": "公告明確指出企業透過設立新子公司進行業務擴張，具備資本動作與組織擴充之需求。", "title": "北玻股份：关于控股子公司对外投资设立子公司的进展公告 - 富途牛牛", "source": "富途牛牛", "date": "Fri, 14 Aug 2026 12:32:00 GMT", "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPUkQ0a3ZUMjhJTlIxbkNMYjZ2bVVjb1dJajg1dlJtcVZ4dDdZQklTcFo1YV9VWXh3NHNlZGYwUVhxMWQwTGZ4UENKNGc1WmhuNF94bXV6X3llSVdmYjBUdG9wdDVpMlFwWlhaWFZVVkxHUUpieHJoYUc0QTRfUTdHaUpNNnkwOUJlNG1wUHBxQWtqa25GSHVKcElPZGxvRDZEX1E?oc=5"}]}, {"query": "馬稠後（進駐馬稠後產業園區之電機設備商）", "label_zh": "馬稠後（進駐馬稠後產業園區之電機設備商）", "category": "企業擴張與資本動作", "items": [{"event": "電機自動控制設備商於馬稠後產業園區新建廠房動土", "reason": "企業進行廠房新建擴產，通常伴隨產線自動化與營運管理系統升級之數位轉型需求。", "title": "電機自動控制設備商馬稠後新建廠房動土 (圖) - Yahoo新聞", "source": "Yahoo新聞", "date": "Thu, 30 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiuAJBVV95cUxQNUVVQUZERjV3dTBrUWR0QjRpTEdWRnllVE45eVJKTVpYQmQwR0pBOGcweU93dE9BaVpLcUdGT0FZVkh6QmNkRjM2UWt3LXBtOE84RWxDWXprdGltZ3c2UWFjcm9VaVpfLVpnLW5ScG02alFGZWw4X0Y4eWtCYjR4MjhMRlZlT3ZrTkVVR3lSWEYwek80SS12N2lBUHU2LS1DdWxEZEI2N2Qzd2ZRb01YcDdHRkpvcHlVMWcwdEY5eS1seTdDNFNralMxZkVrS2F1aTlBbG5tMHRRSk1yaHdoOHhXREF2cXltY2pkMVlQbklmSDlWajFEQnV5dXpNNWMtN0pKVnEydFo1eERQdHFUT08zeDdVdHpha3R1MkxoRnQ4a0FOQklnR1pQY0hGWjBoZ2lVMnpqX2E?oc=5"}]}, {"query": "電機自動控制設備商", "label_zh": "電機自動控制設備商", "category": "企業擴張與資本動作", "items": [{"event": "於馬稠後產業園區舉行新建廠房動土典禮", "reason": "企業興建新廠房屬於明確的擴張資本支出，通常伴隨生產與管理系統升級需求。", "title": "討論牆 | 電機自動控制設備商馬稠後新建廠房動土(圖) - LINE TODAY", "source": "LINE TODAY", "date": "Fri, 31 Jul 2026 10:33:58 GMT", "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9HTk1HdXBZUEg1QjVOUjNvV2tFTThacHJKM1dRTW8zLW1wd3FpYnp1ek5KcHNLdmtKek8tczJYRkkzVXhnWVZIU083cXhLN0d1LTYyRWNjcXEyb1ZOX2xDMVZOQ0g?oc=5"}]}, {"query": "昶碩", "label_zh": "昶碩", "category": "企業擴張與資本動作", "items": [{"event": "馬稠後廠房動土興建，預計兩年後完工投產", "reason": "企業進行實體廠房擴建與動土，為典型的生產規模擴張與資本支出動作。", "title": "電機自動控制設備商 昶碩馬稠後廠房動土估2年完工 - 信吉衛視+", "source": "信吉衛視+", "date": "Fri, 31 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE9WT1FKQlRoM3RWQS1BY0xwcloyTXVoNzZxcU1kanNGSXdVZ1gzaGRrTHdnOWhud0paTk1zODd0WDEwYUFnY2VWamdrZWJFYUU?oc=5"}]}, {"query": "緯承實業股份有限公司", "label_zh": "緯承實業股份有限公司", "category": "企業擴張與資本動作", "items": [{"event": "緯承實業於馬稠後產業園區舉行新廠動土典禮", "reason": "企業增設新廠房屬於具體的營運擴張行為，通常伴隨生產與管理系統的導入需求。", "title": "翁章梁出席緯承實業股份有限公司馬稠後新廠動土典禮 - cna.com.tw", "source": "cna.com.tw", "date": "Tue, 13 Jan 2026 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9mdTJFNkZ3QmJvdmUyam5nbVhKU1R1VDNGa3lzazZDN1I5VWZlaWJLTjNXbVVrVjZCWXZBa0xJSll2ektyU1RDdFl5SHBmRmFSMHRhVldB?oc=5"}]}, {"query": "川湖", "label_zh": "川湖", "category": "企業擴張與資本動作", "items": [{"event": "川湖二廠正式動土，持續擴大生產產能", "reason": "企業擴建新廠房屬於具體的資本支出與生產規模擴張行為，將帶動營運管理與製造系統升級需求。", "title": "持續擴大產能 川湖二廠動土 - 自由時報", "source": "自由時報", "date": "Mon, 17 Nov 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBCem1TTXpvczRMUHZ6TGJ1Vk9JdUdRNWgtZTY3NVlITFQ0Yno4TU9SWDVGOEhvLXJqWlc2RHFRa0ZWc3JkRjlWYkJZTjNINlRuZWxBOWJWYko?oc=5"}, {"event": "川湖科技舉行二廠動土儀式，持續擴大營運產能", "reason": "企業進行擴廠動土屬於明確的資本投資與產能擴張行為，將帶動相關管理系統需求。", "title": "持續擴大產能 川湖二廠動土 - 自由財經", "source": "自由財經", "date": "Tue, 18 Nov 2025 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFB2UnBTdWVrQ05aYkQ5eHo4YXRyTHdUWTYtUU8tVHhVbVcwNERZU0lHaWJ0WGl4cWI3ZXFxWmt0NV9WZ0VMOG5JZWFPekZ4elF6eHVxQTMzTkVwSzJMelJJ?oc=5"}]}, {"query": "佳和", "label_zh": "佳和", "category": "企業擴張與資本動作", "items": [{"event": "投資22億元興建新廠，跨足電動車與軍警用材料", "reason": "明確報導企業具體的資本支出與擴廠行動，將帶動供應鏈與管理系統擴充需求。", "title": "佳和砸22億建新廠 鎖定電動車與軍警高階材料 - 經濟日報", "source": "經濟日報", "date": "Fri, 26 Sep 2025 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9XdHV1MFRrWWtZV09KZ3JhQzNKc1M1ZmNidldQX2dVbUZLVVg4YWtSRThtTVZuTDhwVm1WTzF4LUNOVkFBdDRiVUtxUnBXWGZVdzBHM19UcGl2QdIBX0FVX3lxTE5MMHVCV0Jpc1F4ODJGdGFOQ0J1c1VvXy0xV0FfY0haajJLcFlsd3BiRmxva2JqUlJpbzA3WFpQMlpleGRSWWtqb203eDcxR0g2NHJYRTlhRDY4elk4MmRr?oc=5"}]}, {"query": "台屏集團", "label_zh": "台屏集團", "category": "企業擴張與資本動作", "items": [{"event": "台屏集團於智利舉行新建廠房動土儀式", "reason": "動土儀式代表企業有具體的擴廠與資本投入行為，具備後續系統升級需求之潛力。", "title": "2018/08/10 溫曜禎代表出席智利台商台屏集團新建廠房動土儀式- 駐智利台北經濟文化辦事處 - ROC-Taiwan.org", "source": "ROC-Taiwan.org", "date": "Fri, 20 Dec 2019 17:20:45 GMT", "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5fbGs3SUk4em1rSkZVbnhPQ21BZDRaNzJLa3EtdWtUM3JQNE4yc2lZcUE4dDY5cVJkd2h6VHhFblRmUHFaMjhGbnBKMkJvUVIzZEk1bXFEREVsT200NmR1SldyN0Y?oc=5"}]}, {"query": "北京證券交易所", "label_zh": "北京證券交易所", "category": "KeyMan異動", "items": [{"event": "李永春接任北交所總經理，隋強轉任中國結算董事長", "reason": "明確報導企業核心高層人事異動，符合管理階層變動可能引發系統重整或策略調整之商機訊號。", "title": "北交所換帥塵埃落定：李永春接任總經理，隋強轉任中國結算董事長 - BigGo 財經", "source": "BigGo 財經", "date": "Wed, 19 Aug 2026 09:06:00 GMT", "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5SN1h6QU5tZnVubEhBNXloaTduTGF2Tk83QWxQYTFoQmZDLWJhV0lLUDlPa2x5MlgzQ0Z2S1NKWUlfZW12VE4tNHpCb1IxYzZNTzVGbm5xTXZLWXJTWTBnNVdqMDNoLVVUUF94eWw2SEo5cnRadzRfaVNR?oc=5"}]}, {"query": "未識別公司", "label_zh": "未識別公司", "category": "KeyMan異動", "items": [{"event": "潘景華接任總經理的人事變動與決策過程", "reason": "標題明確指出具體的總經理接任事件，屬於典型的企業高層異動訊號。", "title": "潘景華如何接任總經理？ - UDN", "source": "UDN", "date": "Mon, 17 Aug 2026 00:56:00 GMT", "link": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPTmloTzFValE5dFlKc1NRMGJ1U3NVckwwLXB0cDQxZXJZdVhWbndGZ2UxQV9lVWRhYkdpVXVoaFkwWjczaXVYLTUtVm5rYVMxS0x1TDBXQlVLY094WFk3R1ZzMDBybGcyWDdBY0RTbWIzZXlLRTk1cUV0ckQ0c0hfTjBGOFpTM2FteGMzWUhmNnpOSjVFTU5ua0Vn?oc=5"}]}, {"query": "RHI Magnesita", "label_zh": "RHI Magnesita", "category": "KeyMan異動", "items": [{"event": "Gustavo Franco獲任命為新任執行長", "reason": "新聞明確指出特定公司的高階管理層（執行長）發生人事異動。", "title": "RHI Magnesita任命Gustavo Franco擔任新任執行長 作者 Investing.com - Investing.com 香港 - 股市報價& 財經新聞", "source": "Investing.com 香港 - 股市報價& 財經新聞", "date": "Tue, 18 Aug 2026 06:31:15 GMT", "link": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9zanpYNW4tTEppWTZTaGN5ZmNrekFWV1hSNTFLS3pVRUtwNmI1akQzNkNabXhyRFpYR1l1X05tZ3YySk13VkFGSktQQy11MzhRaXdOelVXVnBaUHB2d3lDaG5VcmhkaU5Cb0hBdHN3MXc?oc=5"}]}, {"query": "亞昕", "label_zh": "亞昕", "category": "KeyMan異動", "items": [{"event": "余世浩接任總經理，姚政岳專任董事長", "reason": "明確報導企業核心高層人事異動，符合管理階層變動的商機訊號。", "title": "亞昕由余世浩接任總經理 姚政岳專任董事長 - TradingView", "source": "TradingView", "date": "Tue, 28 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBXaHg5M2pYRnAwdVJNbkR2QmExTHQydTlxVmpzcDZnVEFDWmllSWVWcjRIZU1MMjRKdGZaZlhFeWVmSWhUSjZSaXFFc1lld0thcVhNVGp4OUVtampnNUpKZXE3ekU?oc=5"}]}, {"query": "台灣人力銀行", "label_zh": "台灣人力銀行", "category": "KeyMan異動", "items": [{"event": "法務長將接任總經理，發生重大人事異動", "reason": "明確指出特定企業的高層人事異動，且總經理變動通常伴隨管理決策與系統調整需求。", "title": "台灣人力銀行發布重訊！公告重大人事異動　法務長將接任總經理 - ETtoday財經雲", "source": "ETtoday財經雲", "date": "Wed, 12 Aug 2026 13:25:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFBET3Ntd3U2Mkt6Qy16OU54c05CN2tPZDRGM2s4OVNBbWduVmtYTFd3dVY3QnNBcFlsRldva0F6YmFBLWlfRi1oekI3OUthcXRQQ2fSAVBBVV95cUxNc0FoZldFb1pjMEtZVEo1UTZyZnI0UE1GNXlfbUN0Y0t3bWpNYmlNd3Fsdm4wd09JS1o0cWJJVnV4MWVPODI5RFFHUnVjcWNRYg?oc=5"}]}, {"query": "Matthews International", "label_zh": "Matthews International", "category": "KeyMan異動", "items": [{"event": "Matthews International宣布執行長正式異動交接", "reason": "標題明確指出該公司執行長（KeyMan）發生接棒異動，屬於具體的人事變動事件。", "title": "【即時新聞】Matthews International(MATW)宣布新任執行長接棒，最新股價微跌逾1%且爆量換手 - CMoney投資網誌", "source": "CMoney投資網誌", "date": "Thu, 13 Aug 2026 03:53:00 GMT", "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNUnBVS0ZzaEo4aXIwLUE4RkJBdmg5b0JWUE9sM09CWEdfdXFubkZoRnlQZVkzTU9QOGlIYkszQm9ETG04TExvNmVhWG5nb2VmRzBLcExaV3puTXduQ2R0YVNRbW1aRzhtbUV2bi02djZRZE5zb2JqVlAyWkhoTTczbENBdTRvU2s5MjJja0pmRzc?oc=5"}]}, {"query": "蘋果 (Apple)", "label_zh": "蘋果 (Apple)", "category": "KeyMan異動", "items": [{"event": "John Ternus接任Apple執行長職位", "reason": "該新聞報導Apple執行長人事異動，屬於關鍵決策層變動的商機訊號。", "title": "Apple新任執行長John Ternus是誰？iPhone 17、MacBook Neo都出自他手 - 客新聞 HakkaNews", "source": "客新聞 HakkaNews", "date": "Tue, 21 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUEFVX3lxTFAzTGlkX0lhdVB0NlZ3OUhaQzNIUjJkQjJwV0paamh0UWdjQlRSZmxCLTZETFJmV1RJOHM2dGVlMXJmUWhaZkxNMU5WSVRoRkNQ?oc=5"}, {"event": "John Ternus接任CEO前夕，延攬退休高管回鍋", "reason": "新聞明確指出特定公司的高階管理層人事變動，符合企業領導層更迭及調整的商機情境。", "title": "John Ternus 接任蘋果 CEO 前夕，延攬退休硬體主管回鍋助陣 | 科技新報 - LINE TODAY", "source": "LINE TODAY", "date": "Tue, 04 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5HZzVWNE5GazlnaVZxV2xJZVZkUTg2bl9semEtZE5vREh3aHEwYmdqdHEzckRrUWlITVB1MTJoVEdUUFN1MXVXZHVRalNOVXZEdFpJOVBR?oc=5"}]}, {"query": "Nazara", "label_zh": "Nazara", "category": "KeyMan異動", "items": [{"event": "印度遊戲商Nazara新任執行長將於九月正式上任", "reason": "新聞明確指出特定公司（Nazara）將有新任執行長上任，符合企業高層異動的商機訊號。", "title": "印度遊戲商Nazara Q1 虧損 8.2 億印度盧比新任執行長九月上任- 財經新聞- PChome Online 新聞 - PChome Online 新聞", "source": "PChome Online 新聞", "date": "Tue, 04 Aug 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxONmNXSzVBRUdfVFl1bnYyYm02aEE3aFVCazBlM2Q3Y1pDeU1nTDg0THc2QVVSNThDTmZ2bUN5SnRNVzAtSXEwYnBGQ1ctYklMSk5NYnlpSFA4SEY2bEF0MmEwVHdsXzZQbnpMWW9oR3VOTUpaSjNqdkJiTlRyNXJtUTIzZTdwT18tYnVPUQ?oc=5"}]}, {"query": "派拉蒙", "label_zh": "派拉蒙", "category": "KeyMan異動", "items": [{"event": "兩名Google高階主管加入派拉蒙推動AI布局", "reason": "新聞明確指出兩名Google高階人才加入派拉蒙擔任要職，屬於具體的KeyMan異動事件。", "title": "派拉蒙擴張科技版圖，兩名 Google 老將空降加速布局 AI | 科技新報 - LINE TODAY", "source": "LINE TODAY", "date": "Wed, 19 Aug 2026 04:58:03 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5PRUVjM3VDc3JlcnYxLXJQaEczMHE1enZTc0FiNnlBNmw2bkJxcE04czhTMjJUR2FWWHc5Yzd2aTlBMHMwbm5UMDRfNmdrcVBpaWY1cUNn?oc=5"}]}, {"query": "OpenAI", "label_zh": "OpenAI", "category": "KeyMan異動", "items": [{"event": "OpenAI延攬前AWS高管進駐，加速開發以色列市場", "reason": "新聞指出特定公司（OpenAI）延攬特定高層主管（前AWS高管），符合高階人事異動的商機訊號。", "title": "OpenAI延攬前AWS高管 加速搶攻以色列AI市場 - 蕃新聞", "source": "蕃新聞", "date": "Thu, 30 Jul 2026 11:37:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9PVXpLR3JfTDZHMXZ1Zk9vOFJjOWFOWEdYZUdtNGljU3d5bm1BZGM1Y0lROUlIREh4VTBLOU9QQkNaQUVVbnhYbWM5d1ROa1h5VFE?oc=5"}]}, {"query": "聯發科", "label_zh": "聯發科", "category": "KeyMan異動", "items": [{"event": "延攬晶圓代工龍頭前高階主管加入團隊", "reason": "新聞明確指出特定企業延攬重要高階人才，屬於高層管理異動的具體商機訊號。", "title": "聯發科傳延攬晶圓一哥前主管 - 經濟日報", "source": "經濟日報", "date": "Sat, 11 Jul 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1HbDJBUkYycHRQQmRodUM0aXRGcUlpd2dFcDlZcGNCYXNfU2pEdkJjSzlNRWJWVVNTV2k5b3JZVklfdEplTngtWHJNV0Y2SllHRlBWNWpZODJEQdIBX0FVX3lxTFBXX3NsTE9uUlpySW5OQ0xqcUgwZ3JyaDVLdmg0QVdaUElFOHpaajlXblc3Y2NjYXpRazJmeFpzenZuR2l3QllQU1ZJNXdOUzRkbFRybDR3bDVrWDNuZmFn?oc=5"}]}, {"query": "仲量聯行 (JLL)", "label_zh": "仲量聯行 (JLL)", "category": "KeyMan異動", "items": [{"event": "延攬前Intel高階主管Louise Dunne擔任要職", "reason": "企業高層人事異動通常會帶來組織變革與營運方向調整，進而產生管理系統升級或優化之需求。", "title": "JLL延攬前Intel高階主管 Louise Dunne 強化科技事業部客戶策略服務 - 墨新聞-MORE News", "source": "墨新聞-MORE News", "date": "Thu, 02 Apr 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiQkFVX3lxTFBqU0NodjlDalNlN3hSYXFpeE9jcm5ZRExzTEtCX3pzZWRCREtrNHJQRmZITUZXVUt3QmZJcTFJM25qdw?oc=5"}]}, {"query": "Zipline", "label_zh": "Zipline", "category": "KeyMan異動", "items": [{"event": "Zipline延攬前特斯拉與Uber高管加入經營團隊", "reason": "新聞明確指出特定公司（Zipline）聘請了具有知名大廠背景的高管，符合關鍵人員異動的商機訊號。", "title": "Zipline延攬前特斯拉、Uber高管 盼普及美國無人機物流 - 蕃新聞", "source": "蕃新聞", "date": "Wed, 15 Jul 2026 07:01:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9WTHNGOGItLXJvSHJXa3h4TXZWcUNkek81UGk4dlhCLVFMUlNpQXBCZGFHb3luX1NzbnFTVHpQR2hSVm5IbkFCbXl4WWZjZ3Z3TWc?oc=5"}]}, {"query": "宏碁", "label_zh": "宏碁", "category": "KeyMan異動", "items": [{"event": "營運長高樹國辭任職務，由董事長陳俊聖兼任", "reason": "明確報導企業核心高層（營運長）異動的具體人事新聞。", "title": "遭爆與下屬婚外情後 宏碁營運長高樹國辭任所有職務！ 董事長陳俊聖兼任營運長 | 太報 - LINE TODAY", "source": "LINE TODAY", "date": "Fri, 14 Aug 2026 11:14:18 GMT", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE93RjNYbG9TbkRMX0FkZ0NGU2V0dlVBazZPZTVzNFViNkFrLXlJYkh2RHlPSG1Oa0V0Zk5Val9QUkl2TkU3azBjM2YwQy1xWEpmUHktaWVR?oc=5"}]}, {"query": "中信育樂", "label_zh": "中信育樂", "category": "KeyMan異動", "items": [{"event": "中信兄弟高層人事調整，彭政閔升任領隊，劉志威轉任營運長。", "reason": "標題明確指出特定企業的關鍵人事異動，符合管理系統升級或組織重組的商機情境。", "title": "中信兄弟人事地震！彭政閔升任領隊 劉志威專任營運長 完整名單公布 - 民報", "source": "民報", "date": "Tue, 02 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9hYzMxVlZaeWIzeVRzdHlCRUtQWVdNNFpHNHlScTF1NFNCbHlLMFJ5dW9lZVA5cmV6dU1WcktXZlhyS19vdXBraUxZRWtJVkVmZno1NzhELTJaNFFwMU9ZZmNaeGRIY0x0Q0E?oc=5"}, {"event": "彭政閔升任領隊，劉志威轉任營運長之高層人事改組", "reason": "明確報導企業核心管理層的人事異動，符合管理系統升級或組織調整的潛在需求。", "title": "中信育樂人事大改組 彭政閔升任球團領隊、劉志威專任營運長 - 台視新聞網", "source": "台視新聞網", "date": "Tue, 02 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE5TVGFLc0lNQUJac0hpakpVSWl2ZFZEd0lwYmZsNnZjZV9aRjN0QVZRbnIxb2IyNFpmcEIwU19mUklpUUtTUDBJVzhfVWpKXzB0R0pveFhTMA?oc=5"}]}, {"query": "巧克科技新媒體 (LINE TV)", "label_zh": "巧克科技新媒體 (LINE TV)", "category": "KeyMan異動", "items": [{"event": "LINE TV原營運長黃國瑜升任總經理", "reason": "明確報導特定企業之高階管理層級異動，符合業務拓展與系統需求變更之商機情境。", "title": "LINE TV母公司人事異動 原營運長黃國瑜升任總經理 - 自由財經", "source": "自由財經", "date": "Mon, 01 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFBmTWtvYzRGQ182NGYwWnhzbU53S1BYbmZQZVVHZWxORURvV2YwU0drUU5FcGZfRzhOSnlnUlRzTG5JQ0llWmJuNWtjSHBoeWs0TV9OZHBiVzJ1eDA5Y1BJ0gFkQVVfeXFMTlZYcG9fc3RQcERoNFBucVV5WjZOWXNSY2JUb0lqSE8xMzNTZ1lEVVo3YXpSWnN1a1RLcE1yZkVqc2xBTHJicGRzSUpCdi1OTXZxOWxsdFdhWUllYzFNamFaemxObg?oc=5"}, {"event": "黃國瑜升任巧克科技新媒體總經理", "reason": "明確指出特定高階管理職位（總經理）的人事異動，符合企業管理階層變動的商機訊號。", "title": "LINE TV整合後新布局 黃國瑜升任巧克科技新媒體總經理 - 三立新聞", "source": "三立新聞", "date": "Mon, 01 Jun 2026 07:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE84U3dDSEdDTXk1VFU3eTZRaDB5ZHJMWVVIN2tILVhPaTBNVUdnSEgyNTlmSDV3d1NybDFidWd0Z09GcFVDTlphaHNfSQ?oc=5"}]}, {"query": "聯電", "label_zh": "聯電", "category": "KeyMan異動", "items": [{"event": "王石升任執行長，徐明志接任總經理暨營運長", "reason": "新聞明確報導企業高層（執行長、總經理）的職位異動，屬於典型的關鍵決策者更迭事件。", "title": "聯電高層人事異動 王石升任執行長 徐明志接任總經理暨營運長 - news.cnyes.com", "source": "news.cnyes.com", "date": "Wed, 25 Feb 2026 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE9xdjFUbFJZeS1LWDEyRlRyNGhjTkw1Q0JRZEU5TUVUVDRUbDEzN2Y3NF92U19kVmMwV0djcjNFbjN1dHd3TXJ1c0F3a3BDbFk?oc=5"}, {"event": "王石升任執行長，徐明志任總經理暨營運長", "reason": "明確提及企業核心高階管理層人事異動，符合系統升級與組織調整之商機訊號。", "title": "聯電高階人事異動！王石升任執行長　徐明志任總座暨營運長 - ETtoday財經雲", "source": "ETtoday財經雲", "date": "Wed, 25 Feb 2026 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1wbFlwX1g0TlVBUWJzNHdtZjA4c1p6d2p1aG1mZnpaVjFmUWxwOEcwTElla1pTNnZiVGd4VVdMTGNfbFUyc2JlVk5sa3U2Qks5X2fSAVBBVV95cUxPNWpDVTloLXdGcHFwVDlQUWxNcHY3MlRLX0F6MkVrUks2Q3JlRjlKQThPRk1GUUl6RUZmaG5yY29Xd2ZMU2ZJYTNQc1JycVNoTw?oc=5"}]}, {"query": "台積電", "label_zh": "台積電", "category": "KeyMan異動", "items": [{"event": "秦永沛與米玉傑升任台積電共同營運長", "reason": "新聞明確指出公司高層經營團隊職位異動，涉及企業核心決策人員調整。", "title": "台積電第3代接班出爐？秦永沛、米玉傑升任營運長 中科二期預計2027 年完工 - 風傳媒", "source": "風傳媒", "date": "Thu, 29 Feb 2024 08:00:00 GMT", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5JNXAtRHFqSUMzWTdiM1k0c0xKOWtBX3FKeTN6d29DQXBjcFQzVWNGdDl5NjRraHRaQzhXbHNfbFVjMmxKRFM0NUxuYlAxOTg?oc=5"}]}], "total_topics": 44, "total_items": 49, "category_order": ["企業擴張與資本動作", "KeyMan異動"]};
+  document.getElementById('genDate').textContent = data.generated;
+
+  var statsEl = document.getElementById('stats');
+  statsEl.innerHTML = [
+    { n: data.total_topics, l: '偵測到的公司' },
+    { n: data.total_items, l: '確認為商機訊號則數' },
+  ].map(function(s){
+    return '<div class="stat"><div class="n">' + s.n + '</div><div class="l">' + s.l + '</div></div>';
+  }).join('');
+
+  var board = document.getElementById('board');
+  var emptyMsg = document.getElementById('emptyMsg');
+
+  function toggleReasonOnClick(e){
+    if(e.target.closest('a.title')) return;
+    var item = e.target.closest('.item');
+    if(item) item.classList.toggle('show-reason');
+  }
+  board.addEventListener('click', toggleReasonOnClick);
+  document.getElementById('weekBoard').addEventListener('click', toggleReasonOnClick);
+
+  function fmtDate(s){
+    if(!s) return '';
+    var d = new Date(s);
+    if(isNaN(d)) return s;
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function highlight(text, q){
+    if(!q) return escapeHtml(text);
+    var esc = escapeHtml(text);
+    var idx = esc.toLowerCase().indexOf(q.toLowerCase());
+    if(idx === -1) return esc;
+    return esc.slice(0,idx) + '<span class="match">' + esc.slice(idx, idx+q.length) + '</span>' + esc.slice(idx+q.length);
+  }
+
+  function dateInRange(dateStr, from, to){
+    if(!from && !to) return true;
+    var d = new Date(dateStr);
+    if(isNaN(d)) return true;
+    if(from && d < new Date(from)) return false;
+    if(to && d > new Date(to + 'T23:59:59Z')) return false;
+    return true;
+  }
+
+  (function renderThisWeek(){
+    var ref = new Date(data.generated);
+    if(isNaN(ref)) ref = new Date();
+    var cutoff = new Date(ref.getTime() - 7 * 24 * 60 * 60 * 1000);
+    var weekItems = [];
+    data.topics.forEach(function(t){
+      t.items.forEach(function(it){
+        var d = new Date(it.date);
+        if(!isNaN(d) && d >= cutoff){
+          weekItems.push({ it: it, topic: t.label_zh || t.query, d: d });
+        }
+      });
+    });
+    weekItems.sort(function(a, b){ return b.d - a.d; });
+
+    var section = document.getElementById('weekSection');
+    if(!weekItems.length){ section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    document.getElementById('weekCount').textContent = '(' + weekItems.length + ')';
+    document.getElementById('weekBoard').innerHTML = weekItems.map(function(w){
+      return itemHtml(w.it, '', w.topic);
+    }).join('');
+  })();
+
+  function itemHtml(it, q, topicLabel){
+    return '' +
+      '<div class="item">' +
+        (topicLabel ? '<div class="week-item-topic">' + escapeHtml(topicLabel) + '</div>' : '') +
+        (it.event ? '<div class="item-top"><span class="pill">' + escapeHtml(it.event) + '</span></div>' : '') +
+        '<a class="title" href="' + escapeHtml(it.link || '#') + '" target="_blank" rel="noopener noreferrer">' + highlight(it.title, q) + '</a>' +
+        '<div class="meta">資料來源：' + escapeHtml(it.source || '') + (it.date ? ' &middot; ' + fmtDate(it.date) : '') + '</div>' +
+        (it.reason ? '<div class="reason-hint">展開判斷理由…</div><div class="reason">' + escapeHtml(it.reason) + '</div>' : '') +
+      '</div>';
+  }
+
+  function cardHtml(key, label, items, q, open){
+    return '' +
+      '<div class="card' + (open ? ' open' : '') + '" data-name="' + escapeHtml(key) + '">' +
+        '<div class="card-head">' +
+          '<span class="caret">&#9656;</span>' +
+          '<span class="card-name">' + highlight(label, q) + '</span>' +
+          '<div class="badges"><span class="badge">相關新聞 ' + items.length + '</span></div>' +
+        '</div>' +
+        '<div class="items">' + items.map(function(it){ return itemHtml(it, q); }).join('') + '</div>' +
+      '</div>';
+  }
+
+  var CATEGORY_ORDER = data.category_order || [];
+  function topicLabel(t){ return t.label_zh || t.query; }
+
+  var topicIndexEl = document.getElementById('topicIndex');
+  var indexHtml = '';
+  CATEGORY_ORDER.forEach(function(cat){
+    var inCat = data.topics.filter(function(t){ return (t.category || '') === cat; });
+    if(!inCat.length) return;
+    var catCount = inCat.reduce(function(sum, t){ return sum + t.items.length; }, 0);
+    indexHtml += '<div class="index-group"><button type="button" class="index-label" data-jump-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + ' (' + catCount + ')</button>' +
+      '<div class="index-chips">' + inCat.map(function(t){
+        return '<button type="button" class="index-chip" data-jump="' + escapeHtml(t.query) + '">' +
+          escapeHtml(topicLabel(t)) + ' (' + t.items.length + ')</button>';
+      }).join('') + '</div></div>';
+  });
+  topicIndexEl.innerHTML = indexHtml;
+
+  topicIndexEl.addEventListener('click', function(e){
+    var catBtn = e.target.closest('.index-label');
+    if(catBtn){
+      var cat = catBtn.getAttribute('data-jump-cat');
+      document.getElementById('searchInput').value = '';
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+      render();
+
+      var section = board.querySelector('.section-title[data-cat="' + CSS.escape(cat) + '"]');
+      if(section){ section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      return;
+    }
+
+    var btn = e.target.closest('.index-chip');
+    if(!btn) return;
+    var name = btn.getAttribute('data-jump');
+
+    document.getElementById('searchInput').value = '';
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    render();
+
+    var target = board.querySelector('.card[data-name="' + CSS.escape(name) + '"]');
+    if(target){
+      target.classList.add('open');
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      target.classList.add('flash');
+      setTimeout(function(){ target.classList.remove('flash'); }, 1600);
+    }
+  });
+
+  var expandAll = false;
+  var expandBtn = document.getElementById('expandToggle');
+  expandBtn.addEventListener('click', function(){
+    expandAll = !expandAll;
+    expandBtn.textContent = expandAll ? '全部收合' : '全部展開';
+    render();
+  });
+
+  function render(){
+    var q = document.getElementById('searchInput').value.trim();
+    var ql = q.toLowerCase();
+    var dFrom = document.getElementById('dateFrom').value;
+    var dTo = document.getElementById('dateTo').value;
+
+    var topics = data.topics.map(function(t){
+      var items = t.items.filter(function(it){
+        if(!dateInRange(it.date, dFrom, dTo)) return false;
+        if(!ql) return true;
+        return ((it.event || '') + it.title + t.query).toLowerCase().indexOf(ql) !== -1;
+      }).sort(function(a, b){ return new Date(b.date) - new Date(a.date); });
+      var latest = items.length ? new Date(items[0].date) : new Date(0);
+      return { query: t.query, label: topicLabel(t), category: t.category || '', items: items, latest: latest };
+    }).filter(function(t){ return t.items.length; });
+
+    var html = '';
+    CATEGORY_ORDER.forEach(function(cat){
+      var inCat = topics.filter(function(t){ return t.category === cat; })
+        .sort(function(a, b){ return b.latest - a.latest; });
+      if(!inCat.length) return;
+      html += '<div class="section-title" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '<span class="count">(' + inCat.length + ')</span></div>';
+      html += inCat.map(function(t){
+        var open = expandAll || !!ql;
+        return cardHtml(t.query, t.label, t.items, q, open);
+      }).join('');
+    });
+    board.innerHTML = html;
+    emptyMsg.style.display = topics.length ? 'none' : 'block';
+
+    Array.prototype.forEach.call(board.querySelectorAll('.card-head'), function(head){
+      head.addEventListener('click', function(){
+        head.parentElement.classList.toggle('open');
+      });
+    });
+  }
+
+  document.getElementById('searchInput').addEventListener('input', render);
+  document.getElementById('dateFrom').addEventListener('change', render);
+  document.getElementById('dateTo').addEventListener('change', render);
+  document.getElementById('dateClear').addEventListener('click', function(){
+    document.getElementById('dateFrom').value = '';
+    document.getElementById('dateTo').value = '';
+    render();
+  });
+  render();
+
+  var backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', function(){
+    backToTop.classList.toggle('visible', window.scrollY > 400);
+  });
+  backToTop.addEventListener('click', function(){
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
